@@ -7,6 +7,7 @@ class Day2Part1 {
         while (program.getOpcode() != 99) {
             when (program.getOpcode()) {
                 1 -> program.add()
+                2 -> program.multiply()
             }
             program.next()
         }
@@ -30,8 +31,17 @@ internal class Program(val program: IntArray) {
         println(this)
     }
 
-    override fun toString() = program.joinToString(",")
+    fun multiply() {
+        val param1 = program[program[pointer + 1]]
+        val param2 = program[program[pointer + 2]]
+        val targetPos = program[pointer + 3]
+        program[targetPos] = param1 * param2
+        println(this)
+    }
+
     fun next() {
         pointer += 4
     }
+
+    override fun toString() = program.joinToString(",")
 }
