@@ -1,6 +1,6 @@
 package com.sanderverbruggen.adventofcode.day2
 
-internal class Program(val program: IntArray) {
+internal class IntcodeProgram(val program: IntArray) {
     constructor(program: String) : this(program.split(",").map { it.toInt() }.toIntArray())
 
     private var instructionPointer = 0
