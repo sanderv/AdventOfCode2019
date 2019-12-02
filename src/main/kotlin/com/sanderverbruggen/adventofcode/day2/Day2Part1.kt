@@ -5,7 +5,7 @@ internal class Program(val program: IntArray) {
 
     private var pointer = 0
 
-    fun run(): String {
+    fun run() {
         while (getOpcode() != 99) {
             when (getOpcode()) {
                 1 -> add()
@@ -13,7 +13,6 @@ internal class Program(val program: IntArray) {
             }
             next()
         }
-        return this.toString()
     }
 
     private fun getOpcode() = program[pointer]
