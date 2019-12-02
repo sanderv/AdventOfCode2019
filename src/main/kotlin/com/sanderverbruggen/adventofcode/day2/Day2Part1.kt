@@ -1,45 +1,35 @@
 package com.sanderverbruggen.adventofcode.day2
 
-class Day2Part1 {
-    fun runIntcode(intcode: String): String {
-        val program = Program(intcode)
-
-        while (program.getOpcode() != 99) {
-            when (program.getOpcode()) {
-                1 -> program.add()
-                2 -> program.multiply()
-            }
-            program.next()
-        }
-
-        return program.toString()
-    }
-}
-
 internal class Program(val program: IntArray) {
     constructor(program: String) : this(program.split(",").map { it.toInt() }.toIntArray())
 
     private var pointer = 0
 
-    fun getOpcode() = program[pointer]
+    fun run(): String {
+        while (getOpcode() != 99) {
+            when (getOpcode()) {
+                1 -> add()
+                2 -> multiply()
+            }
+            next()
+        }
+        return this.toString()
+    }
 
-    fun add() {
+    private fun getOpcode() = program[pointer]
+
+    private fun add() = execute { x, y -> x + y }
+
+    private fun multiply() = execute { x, y -> x * y }
+
+    private fun execute(calc: (x: Int, y: Int) -> Int) {
         val param1 = program[program[pointer + 1]]
         val param2 = program[program[pointer + 2]]
         val targetPos = program[pointer + 3]
-        program[targetPos] = param1 + param2
-        println(this)
+        program[targetPos] = calc(param1, param2)
     }
 
-    fun multiply() {
-        val param1 = program[program[pointer + 1]]
-        val param2 = program[program[pointer + 2]]
-        val targetPos = program[pointer + 3]
-        program[targetPos] = param1 * param2
-        println(this)
-    }
-
-    fun next() {
+    private fun next() {
         pointer += 4
     }
 

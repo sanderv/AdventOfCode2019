@@ -16,6 +16,6 @@ class Day2Part1Test {
             delimiter = '|'
     )
     internal fun `examples should work`(intcode: String, expectedResult: String) {
-        assertThat(Day2Part1().runIntcode(intcode)).isEqualTo(expectedResult);
+        assertThat(Program(intcode).run()).isEqualTo(expectedResult);
     }
 }
