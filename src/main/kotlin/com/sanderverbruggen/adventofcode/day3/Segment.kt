@@ -67,10 +67,7 @@ class HorizontalSegment(
             is HorizontalSegment -> 0
             is VerticalSegment -> {
                 val crosses = other.x in startX..endX && y in other.startY..other.endY
-                print("matching ${other.x} in $startX..$endX && $y in ${other.startY}..${other.endY}: $crosses")
-                val result = if (crosses) abs(other.x) + abs(y) else 0
-                println(" --> $result")
-                result
+                if (crosses) abs(other.x) + abs(y) else 0
             }
             else -> 0
         }
@@ -90,10 +87,7 @@ class VerticalSegment(
         return when (other) {
             is HorizontalSegment -> {
                 val crosses = other.y in startY..endY && x in other.startX..other.endX
-                print("${other.y} in $startY..$endY && $x in ${other.startX}..${other.endX}: $crosses")
-                val result = if (crosses) abs(other.y) + abs(x) else 0
-                println(" --> $result")
-                result
+                if (crosses) abs(other.y) + abs(x) else 0
             }
             is VerticalSegment -> 0
             else -> 0
