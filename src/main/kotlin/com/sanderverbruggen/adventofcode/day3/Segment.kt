@@ -2,10 +2,41 @@ package com.sanderverbruggen.adventofcode.day3
 
 import java.lang.Integer.max
 import java.lang.Integer.min
+import java.lang.Math.abs
 
-enum class Direction { L, R, U, D }
+class Map(
+        private val path1: List<Segment>,
+        private val path2: List<Segment>
+) {
+    companion object {
+        private fun draw(instructions: String): List<Segment> {
+            var currentPoint = Point(0, 0)
+            return instructions.split(",")
+                    .map { instruction ->
+                        val (segment, newPoint) = Segment.draw(currentPoint, instruction)
+                        currentPoint = newPoint
+                        segment
+                    }.toList()
+        }
+    }
+
+    constructor(instructionsPath1: String, instructionsPath2: String) : this(draw(instructionsPath1), draw(instructionsPath2))
+
+    fun findNearestCrossingDistance(): Int {
+        return path1
+                .mapNotNull { path1Segment ->
+                    path2
+                            .map { path2Segment -> path1Segment.crossingDistanceFromStart(path2Segment) }
+                            .filter { it > 0 }
+                            .min()
+                }
+                .filter { it > 0 }
+                .min() ?: 0
+    }
+}
 
 abstract class Segment {
+
     companion object {
         fun draw(from: Point, instruction: String): Pair<Segment, Point> {
             val direction = Direction.valueOf(instruction[0].toString())
@@ -20,6 +51,7 @@ abstract class Segment {
     }
 
     abstract fun crossingDistanceFromStart(other: Segment): Int
+
 }
 
 class HorizontalSegment(
@@ -27,16 +59,23 @@ class HorizontalSegment(
         endX: Int,
         val y: Int
 ) : Segment() {
+
     val startX: Int = min(startX, endX)
     val endX: Int = max(startX, endX)
-
     override fun crossingDistanceFromStart(other: Segment): Int {
         return when (other) {
             is HorizontalSegment -> 0
-            is VerticalSegment -> if (other.x in startX..endX && y in other.startY..other.endY) other.x + y else 0
+            is VerticalSegment -> {
+                val crosses = other.x in startX..endX && y in other.startY..other.endY
+                print("matching ${other.x} in $startX..$endX && $y in ${other.startY}..${other.endY}: $crosses")
+                val result = if (crosses) abs(other.x) + abs(y) else 0
+                println(" --> $result")
+                result
+            }
             else -> 0
         }
     }
+
 }
 
 class VerticalSegment(
@@ -44,16 +83,25 @@ class VerticalSegment(
         startY: Int,
         endY: Int
 ) : Segment() {
+
     val startY = min(startY, endY)
     val endY = max(startY, endY)
-
     override fun crossingDistanceFromStart(other: Segment): Int {
         return when (other) {
-            is HorizontalSegment -> if (other.y in startY..endY && x in other.startX..other.endX) other.y + x else 0
+            is HorizontalSegment -> {
+                val crosses = other.y in startY..endY && x in other.startX..other.endX
+                print("${other.y} in $startY..$endY && $x in ${other.startX}..${other.endX}: $crosses")
+                val result = if (crosses) abs(other.y) + abs(x) else 0
+                println(" --> $result")
+                result
+            }
             is VerticalSegment -> 0
             else -> 0
         }
     }
+
 }
 
 class Point(val x: Int, val y: Int)
+
+enum class Direction { L, R, U, D }
