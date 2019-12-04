@@ -3,7 +3,22 @@ package com.sanderverbruggen.adventofcode.day3
 import java.lang.Integer.max
 import java.lang.Integer.min
 
+enum class Direction { L, R, U, D }
+
 abstract class Segment {
+    companion object {
+        fun draw(from: Point, instruction: String): Pair<Segment, Point> {
+            val direction = Direction.valueOf(instruction[0].toString())
+            val distance = instruction.drop(1).toInt()
+            return when (direction) {
+                Direction.L -> Pair(HorizontalSegment(from.x, from.x - distance, from.y), Point(from.x - distance, from.y))
+                Direction.R -> Pair(HorizontalSegment(from.x, from.x + distance, from.y), Point(from.x + distance, from.y))
+                Direction.U -> Pair(VerticalSegment(from.x, from.y, from.y + distance), Point(from.x, from.y + distance))
+                Direction.D -> Pair(VerticalSegment(from.x, from.y, from.y - distance), Point(from.x, from.y - distance))
+            }
+        }
+    }
+
     abstract fun crossingDistanceFromStart(other: Segment): Int
 }
 
@@ -40,3 +55,5 @@ class VerticalSegment(
         }
     }
 }
+
+class Point(val x: Int, val y: Int)
