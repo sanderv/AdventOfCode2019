@@ -13,12 +13,28 @@ internal class PasswordCrackerTest {
             " 123789 | false ",
             delimiter = '|'
     )
-    internal fun `should check facts`(password: Int, expectedMatch: Boolean) {
-        assertThat(PasswordCracker().matchesFacts(password)).isEqualTo(expectedMatch)
+    internal fun `should check facts`(password: String, expectedMatch: Boolean) {
+        assertThat(PasswordCracker().matchesSimpleFacts(password)).isEqualTo(expectedMatch)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+            " 112233 | true  ",
+            " 123444 | false ",
+            " 111122 | true ",
+            delimiter = '|'
+    )
+    internal fun `should check stricter facts`(password: String, expectedMatch: Boolean) {
+        assertThat(PasswordCracker().matchesStricterFacts(password)).isEqualTo(expectedMatch)
     }
 
     @Test
     internal fun `part 1 answer is 475`() {
         assertThat(PasswordCracker().solve((372304..847060))).isEqualTo(475)
+    }
+
+    @Test
+    internal fun `part 2 answer`() {
+        assertThat(PasswordCracker().solve((372304..847060), true)).isEqualTo(297)
     }
 }
