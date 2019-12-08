@@ -22,27 +22,35 @@ class Map(
     }
 
     fun findNearestPathStepsDistance(): Int {
-        return -1
+        return path1.findNearestPathStepsDistance(path2)
     }
 }
 
 class Path {
     var currentPoint = Point(0, 0)
     val steps: MutableList<Point> = mutableListOf()
+    val pointCache: MutableMap<Int, MutableMap<Int, Point>> = mutableMapOf()
 
     fun addStep(instruction: String) {
         val direction = Direction.valueOf(instruction[0].toString())
         val distance = instruction.drop(1).toInt()
         repeat(distance) {
-            val nextCords = when (direction) {
+            val nextPoint = when (direction) {
                 Direction.L -> Point(currentPoint.x - 1, currentPoint.y)
                 Direction.R -> Point(currentPoint.x + 1, currentPoint.y)
                 Direction.U -> Point(currentPoint.x, currentPoint.y + 1)
                 Direction.D -> Point(currentPoint.x, currentPoint.y - 1)
             }
-            currentPoint = Point(nextCords.x, nextCords.y, currentPoint.stepsFromStart + 1)
+            currentPoint = /*pointCache.get(nextPoint.x)?.get(nextPoint.y)
+                    ?:*/ Point(nextPoint.x, nextPoint.y, currentPoint.stepsFromStart + 1)
             steps.add(currentPoint)
+            addToCache(currentPoint)
         }
+    }
+
+    private fun addToCache(point: Point) {
+        pointCache[point.x] = pointCache[point.x] ?: mutableMapOf()
+        pointCache.get(point.x)?.put(point.y, point)
     }
 
     fun findNearestManhattanCrossingDistance(other: Path): Int {
@@ -66,7 +74,7 @@ class Path {
 class Point(val x: Int, val y: Int, val stepsFromStart: Int = 0) {
 
     override fun toString(): String {
-        return "($x, $y)"
+        return "($x, $y) -> $stepsFromStart"
     }
 
 
