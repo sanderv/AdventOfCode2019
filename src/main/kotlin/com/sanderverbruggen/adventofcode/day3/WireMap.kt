@@ -41,6 +41,9 @@ class Path {
                 Direction.U -> Point(currentPoint.x, currentPoint.y + 1)
                 Direction.D -> Point(currentPoint.x, currentPoint.y - 1)
             }
+            // This should find a previous "encounter" of this point, according to the specs:
+            // If a wire visits a position on the grid multiple times, use the steps value from the first time it visits that position when calculating the total value of a specific intersection.
+            // But the site does't accept that answer
             currentPoint = /*pointCache.get(nextPoint.x)?.get(nextPoint.y)
                     ?:*/ Point(nextPoint.x, nextPoint.y, currentPoint.stepsFromStart + 1)
             steps.add(currentPoint)
