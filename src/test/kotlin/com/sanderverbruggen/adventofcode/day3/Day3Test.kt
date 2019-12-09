@@ -2,6 +2,7 @@ package com.sanderverbruggen.adventofcode.day3
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -28,8 +29,14 @@ class Day3Test {
         assertThat(path.steps.last().stepsFromStart).isEqualTo(7)
 
         path.addStep("L2")
-        path.addStep("D2")
-        assertThat(path.steps.last().stepsFromStart).isEqualTo(3)
+        path.addStep("D3")
+        assertAll(
+                { assertThat(path.findPoint(Point(3, 1)).stepsFromStart).isEqualTo(10) },
+                { assertThat(path.findPoint(Point(3, 0)).stepsFromStart).isEqualTo(3) },
+                { assertThat(path.findPoint(Point(3, -1)).stepsFromStart).isEqualTo(4) }
+        )
+
+
     }
 
 
