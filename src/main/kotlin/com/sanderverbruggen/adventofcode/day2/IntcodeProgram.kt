@@ -11,7 +11,10 @@ internal class IntcodeProgram(val program: IntArray) {
                 1 -> add()
                 2 -> multiply()
             }
-            next()
+            advance(when (getOpcode()) {
+                1, 2 -> 4
+                else -> TODO("Don't know what to do")
+            })
         }
     }
 
@@ -28,8 +31,8 @@ internal class IntcodeProgram(val program: IntArray) {
         program[targetAddress] = calc(param1, param2)
     }
 
-    private fun next() {
-        instructionPointer += 4
+    private fun advance(steps: Int) {
+        instructionPointer += steps
     }
 
     override fun toString() = program.joinToString(",")
