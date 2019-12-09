@@ -1,24 +1,26 @@
 package com.sanderverbruggen.adventofcode.day2
 
+import com.sanderverbruggen.adventofcode.day2.Opcode.*
+
 internal class IntcodeProgram(val program: IntArray) {
     constructor(program: String) : this(program.split(",").map { it.toInt() }.toIntArray())
 
     private var instructionPointer = 0
 
     fun run() {
-        while (getOpcode() != 99) {
+        while (getOpcode() != END) {
             when (getOpcode()) {
-                1 -> add()
-                2 -> multiply()
+                ADD -> add()
+                MULTIPLY -> multiply()
             }
             advance(when (getOpcode()) {
-                1, 2 -> 4
+                ADD, MULTIPLY -> 4
                 else -> TODO("Don't know what to do")
             })
         }
     }
 
-    private fun getOpcode() = program[instructionPointer]
+    private fun getOpcode() = Opcode.byCode(program[instructionPointer] % 100)
 
     private fun add() = execute { x, y -> x + y }
 
@@ -36,4 +38,14 @@ internal class IntcodeProgram(val program: IntArray) {
     }
 
     override fun toString() = program.joinToString(",")
+}
+
+enum class Opcode(private val code: Int) {
+    ADD(1),
+    MULTIPLY(2),
+    END(99);
+
+    companion object {
+        fun byCode(code: Int) = values().first { it.code == code }
+    }
 }
