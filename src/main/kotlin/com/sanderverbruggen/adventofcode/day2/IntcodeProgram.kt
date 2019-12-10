@@ -11,8 +11,8 @@ open class IntcodeProgram(val program: IntArray) {
     fun run() {
         while (getOpcode() != END) {
             when (getOpcode()) {
-                ADD -> add()
-                MULTIPLY -> multiply()
+                ADD -> AddInstruction(this).exec()
+                MULTIPLY -> MultiplyInstruction(this).exec()
                 INPUT -> input()
                 OUTPUT -> output()
             }
@@ -25,10 +25,7 @@ open class IntcodeProgram(val program: IntArray) {
         }
     }
 
-    internal fun getOpcode(): Opcode {
-        val result = Opcode.byCode(getInstruction() % 100)
-        return result
-    }
+    internal fun getOpcode(): Opcode = Opcode.byCode(getInstruction() % 100)
 
     internal fun getParam(paramNr: Int): Int {
         return when (getParamMode(paramNr)) {
@@ -41,17 +38,12 @@ open class IntcodeProgram(val program: IntArray) {
 
     internal fun getInstruction() = program[instructionPointer]
 
-    internal fun add() = calculate { x, y -> x + y }
-
-    internal fun multiply() = calculate { x, y -> x * y }
-
     protected open fun input() {
-        print("> ")
-        write(readLine()!!.toInt(), 1)
+        InputInstruction(this).exec()
     }
 
     protected open fun output() {
-        println(getParam(1))
+        OutputInstruction(this).exec()
     }
 
     private fun calculate(calc: (x: Int, y: Int) -> Int) {
@@ -87,5 +79,42 @@ enum class ParamMode(val code: Int) {
 
     companion object {
         fun byCode(code: Int) = values().first { it.code == code }
+    }
+}
+
+abstract class Instruction(val nrOfInts: Int, protected val program: IntcodeProgram) {
+    abstract fun exec()
+}
+
+class AddInstruction(program: IntcodeProgram) : Instruction(4, program) {
+    override fun exec() {
+        with(program) {
+            write(getParam(1) + getParam(2), 3)
+        }
+    }
+}
+
+class MultiplyInstruction(program: IntcodeProgram) : Instruction(4, program) {
+    override fun exec() {
+        with(program) {
+            write(getParam(1) * getParam(2), 3)
+        }
+    }
+}
+
+class InputInstruction(program: IntcodeProgram) : Instruction(2, program) {
+    override fun exec() {
+        with(program) {
+            print("> ")
+            write(readLine()!!.toInt(), 1)
+        }
+    }
+}
+
+class OutputInstruction(program: IntcodeProgram) : Instruction(2, program) {
+    override fun exec() {
+        with(program) {
+            println(getParam(1))
+        }
     }
 }
