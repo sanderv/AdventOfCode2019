@@ -3,7 +3,7 @@ package com.sanderverbruggen.adventofcode.day2
 import com.sanderverbruggen.adventofcode.day2.Opcode.*
 import kotlin.math.pow
 
-internal class IntcodeProgram(val program: IntArray) {
+open class IntcodeProgram(val program: IntArray) {
     constructor(program: String) : this(program.split(",").map { it.toInt() }.toIntArray())
 
     private var instructionPointer = 0
@@ -13,16 +13,22 @@ internal class IntcodeProgram(val program: IntArray) {
             when (getOpcode()) {
                 ADD -> add()
                 MULTIPLY -> multiply()
+                INPUT -> input()
+                OUTPUT -> output()
             }
 
             advance(when (getOpcode()) {
                 ADD, MULTIPLY -> 4
+                INPUT, OUTPUT -> 2
                 else -> TODO("Don't know what to do")
             })
         }
     }
 
-    internal fun getOpcode() = Opcode.byCode(getInstruction() % 100)
+    internal fun getOpcode(): Opcode {
+        val result = Opcode.byCode(getInstruction() % 100)
+        return result
+    }
 
     internal fun getParam(paramNr: Int): Int {
         return when (getParamMode(paramNr)) {
@@ -35,13 +41,26 @@ internal class IntcodeProgram(val program: IntArray) {
 
     internal fun getInstruction() = program[instructionPointer]
 
-    private fun add() = calculate { x, y -> x + y }
+    internal fun add() = calculate { x, y -> x + y }
 
-    private fun multiply() = calculate { x, y -> x * y }
+    internal fun multiply() = calculate { x, y -> x * y }
+
+    protected open fun input() {
+        print("> ")
+        write(readLine()!!.toInt(), 1)
+    }
+
+    protected open fun output() {
+        println(getParam(1))
+    }
 
     private fun calculate(calc: (x: Int, y: Int) -> Int) {
-        val targetAddress = program[instructionPointer + 3]
-        program[targetAddress] = calc(getParam(1), getParam(2))
+        write(calc(getParam(1), getParam(2)), 3)
+    }
+
+    internal fun write(value: Int, targetParam: Int) {
+        val targetAddress = program[instructionPointer + targetParam]
+        program[targetAddress] = value
     }
 
     private fun advance(steps: Int) {
@@ -54,6 +73,8 @@ internal class IntcodeProgram(val program: IntArray) {
 enum class Opcode(private val code: Int) {
     ADD(1),
     MULTIPLY(2),
+    INPUT(3),
+    OUTPUT(4),
     END(99);
 
     companion object {

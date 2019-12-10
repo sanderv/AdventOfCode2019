@@ -1,5 +1,6 @@
 package com.sanderverbruggen.adventofcode.day1
 
+import com.sanderverbruggen.adventofcode.readFile
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -8,8 +9,7 @@ import org.junit.jupiter.params.provider.CsvSource
 
 @DisplayName("Day 1 Part 2's")
 internal class Day1Part2Test {
-    private val input = this::class.java.classLoader.getResource("day1/input.txt")
-            .readText()
+    private val input = readFile("day1/input.txt")
             .lines()
             .map { it.toInt() }
 

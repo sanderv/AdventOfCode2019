@@ -2,6 +2,7 @@ package com.sanderverbruggen.adventofcode.day5
 
 import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import com.sanderverbruggen.adventofcode.day2.ParamMode
+import com.sanderverbruggen.adventofcode.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -26,5 +27,24 @@ internal class IntcodeProgramTest {
         val program = IntcodeProgram("1002,4,3,4,33")
         program.run()
         assertThat(program.program).containsExactly(1002, 4, 3, 4, 99)
+    }
+
+    @Test
+    internal fun `day 5 part 1 solution should be 7286649`() {
+        val instructions = readFile("day5/input.txt")
+        val program = TestableIntcodeProgram(instructions, 1)
+        program.run()
+        assertThat(program.output.last()).isEqualTo(7286649)
+    }
+}
+
+internal class TestableIntcodeProgram(program: String, val input: Int) : IntcodeProgram(program) {
+    val output: MutableList<Int> = mutableListOf()
+    override fun input() {
+        write(input, 1)
+    }
+
+    override fun output() {
+        output.add(getParam(1))
     }
 }
