@@ -10,18 +10,16 @@ open class IntcodeProgram(val program: IntArray) {
 
     fun run() {
         while (getOpcode() != END) {
-            when (getOpcode()) {
-                ADD -> AddInstruction(this).exec()
-                MULTIPLY -> MultiplyInstruction(this).exec()
+            val instruction = when (getOpcode()) {
+                ADD -> AddInstruction(this)
+                MULTIPLY -> MultiplyInstruction(this)
                 INPUT -> input()
                 OUTPUT -> output()
+                else -> throw RuntimeException("Unknown opcode")
             }
 
-            advance(when (getOpcode()) {
-                ADD, MULTIPLY -> 4
-                INPUT, OUTPUT -> 2
-                else -> TODO("Don't know what to do")
-            })
+            instruction.exec()
+            advance(instruction.nrOfInts)
         }
     }
 
@@ -38,17 +36,9 @@ open class IntcodeProgram(val program: IntArray) {
 
     internal fun getInstruction() = program[instructionPointer]
 
-    protected open fun input() {
-        InputInstruction(this).exec()
-    }
+    protected open fun input(): Instruction = InputInstruction(this)
 
-    protected open fun output() {
-        OutputInstruction(this).exec()
-    }
-
-    private fun calculate(calc: (x: Int, y: Int) -> Int) {
-        write(calc(getParam(1), getParam(2)), 3)
-    }
+    protected open fun output(): Instruction = OutputInstruction(this)
 
     internal fun write(value: Int, targetParam: Int) {
         val targetAddress = program[instructionPointer + targetParam]

@@ -1,5 +1,6 @@
 package com.sanderverbruggen.adventofcode.day5
 
+import com.sanderverbruggen.adventofcode.day2.Instruction
 import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import com.sanderverbruggen.adventofcode.day2.ParamMode
 import com.sanderverbruggen.adventofcode.readFile
@@ -40,11 +41,15 @@ internal class IntcodeProgramTest {
 
 internal class TestableIntcodeProgram(program: String, val input: Int) : IntcodeProgram(program) {
     val output: MutableList<Int> = mutableListOf()
-    override fun input() {
-        write(input, 1)
+    override fun input() = object : Instruction(2, this) {
+        override fun exec() {
+            program.write(1, 1)
+        }
     }
 
-    override fun output() {
-        output.add(getParam(1))
+    override fun output() = object : Instruction(2, this) {
+        override fun exec() {
+            output.add(getParam(1))
+        }
     }
 }
