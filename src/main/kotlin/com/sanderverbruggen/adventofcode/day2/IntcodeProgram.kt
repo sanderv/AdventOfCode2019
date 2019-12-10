@@ -9,17 +9,21 @@ open class IntcodeProgram(internal val program: IntArray) {
             1 to AddInstruction(this),
             2 to MultiplyInstruction(this),
             3 to InputInstruction(this),
-            4 to OutputInstruction(this)
+            4 to OutputInstruction(this),
+            5 to JumpIfTrueInstruction(this),
+            6 to JumpIfFalseInstruction(this),
+            7 to LessThanInstruction(this),
+            8 to EqualsInstruction(this)
     )
 
-    private var instructionPointer = 0
+    internal var instructionPointer = 0
 
     fun run() {
         while (getOpcode() != 99) {
             val instruction = instructionSet[getOpcode()] ?: throw RuntimeException("Unknown opcode ${getOpcode()}")
 
             instruction.exec()
-            advance(instruction.nrOfInts)
+            advance(instruction.skipInts)
         }
     }
 
@@ -76,7 +80,7 @@ enum class ParamMode(val code: Int) {
     }
 }
 
-abstract class Instruction(val nrOfInts: Int, protected val program: IntcodeProgram) {
+abstract class Instruction(var skipInts: Int, protected val program: IntcodeProgram) {
     abstract fun exec()
 }
 
@@ -109,6 +113,50 @@ class OutputInstruction(program: IntcodeProgram) : Instruction(2, program) {
     override fun exec() {
         with(program) {
             println(getParam(1))
+        }
+    }
+}
+
+class JumpIfTrueInstruction(program: IntcodeProgram) : Instruction(3, program) {
+    override fun exec() {
+        with(program) {
+            if (getParam(1) != 0) {
+                instructionPointer = getParam(2)
+                skipInts = 0 // already jumped
+            } else {
+                skipInts = 3 // no jump, advance to next instruction
+            }
+        }
+    }
+}
+
+class JumpIfFalseInstruction(program: IntcodeProgram) : Instruction(3, program) {
+    override fun exec() {
+        with(program) {
+            if (getParam(1) == 0) {
+                instructionPointer = getParam(2)
+                skipInts = 0 // already jumped
+            } else {
+                skipInts = 3 // no jump, advance to next instruction
+            }
+        }
+    }
+}
+
+class LessThanInstruction(program: IntcodeProgram) : Instruction(4, program) {
+    override fun exec() {
+        with(program) {
+            val value = if (getParam(1) < getParam(2)) 1 else 0
+            write(value, 3)
+        }
+    }
+}
+
+class EqualsInstruction(program: IntcodeProgram) : Instruction(4, program) {
+    override fun exec() {
+        with(program) {
+            val value = if (getParam(1) == getParam(2)) 1 else 0
+            write(value, 3)
         }
     }
 }
