@@ -1,29 +1,33 @@
 package com.sanderverbruggen.adventofcode.day2
 
-import com.sanderverbruggen.adventofcode.day2.Opcode.*
 import kotlin.math.pow
 
-open class IntcodeProgram(val program: IntArray) {
+open class IntcodeProgram(internal val program: IntArray) {
     constructor(program: String) : this(program.split(",").map { it.toInt() }.toIntArray())
+
+    internal var instructionSet = mutableMapOf(
+            1 to AddInstruction(this),
+            2 to MultiplyInstruction(this),
+            3 to InputInstruction(this),
+            4 to OutputInstruction(this)
+    )
 
     private var instructionPointer = 0
 
     fun run() {
-        while (getOpcode() != END) {
-            val instruction = when (getOpcode()) {
-                ADD -> AddInstruction(this)
-                MULTIPLY -> MultiplyInstruction(this)
-                INPUT -> input()
-                OUTPUT -> output()
-                else -> throw RuntimeException("Unknown opcode")
-            }
+        while (getOpcode() != 99) {
+            val instruction = instructionSet[getOpcode()] ?: throw RuntimeException("Unknown opcode ${getOpcode()}")
 
             instruction.exec()
             advance(instruction.nrOfInts)
         }
     }
 
-    internal fun getOpcode(): Opcode = Opcode.byCode(getInstruction() % 100)
+    internal fun getOpcode() = getRawInstruction() % 100
+
+    internal fun getParamMode(paramNr: Int) = ParamMode.byCode((getRawInstruction() / 10.0.pow(paramNr + 1) % 10).toInt())
+
+    internal fun getRawInstruction() = program[instructionPointer]
 
     internal fun getParam(paramNr: Int): Int {
         return when (getParamMode(paramNr)) {
@@ -31,14 +35,6 @@ open class IntcodeProgram(val program: IntArray) {
             ParamMode.IMMEDIATE -> program[instructionPointer + paramNr]
         }
     }
-
-    internal fun getParamMode(paramNr: Int) = ParamMode.byCode((getInstruction() / 10.0.pow(paramNr + 1) % 10).toInt())
-
-    internal fun getInstruction() = program[instructionPointer]
-
-    protected open fun input(): Instruction = InputInstruction(this)
-
-    protected open fun output(): Instruction = OutputInstruction(this)
 
     internal fun write(value: Int, targetParam: Int) {
         val targetAddress = program[instructionPointer + targetParam]
@@ -49,6 +45,12 @@ open class IntcodeProgram(val program: IntArray) {
         instructionPointer += steps
     }
 
+    // Test seam
+    protected open fun input(): Instruction = InputInstruction(this)
+
+    // Test seam
+    protected open fun output(): Instruction = OutputInstruction(this)
+
     override fun toString() = program.joinToString(",")
 }
 
@@ -57,6 +59,8 @@ enum class Opcode(private val code: Int) {
     MULTIPLY(2),
     INPUT(3),
     OUTPUT(4),
+    JUMP_IF_TRUE(5),
+    JUMP_IF_FALSE(6),
     END(99);
 
     companion object {

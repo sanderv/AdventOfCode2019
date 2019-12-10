@@ -39,17 +39,19 @@ internal class IntcodeProgramTest {
     }
 }
 
-internal class TestableIntcodeProgram(program: String, val input: Int) : IntcodeProgram(program) {
+internal class TestableIntcodeProgram(instructions: String, val input: Int) : IntcodeProgram(instructions) {
     val output: MutableList<Int> = mutableListOf()
-    override fun input() = object : Instruction(2, this) {
-        override fun exec() {
-            program.write(1, 1)
-        }
-    }
 
-    override fun output() = object : Instruction(2, this) {
-        override fun exec() {
-            output.add(getParam(1))
+    init {
+        instructionSet[3] = object : Instruction(2, this) {
+            override fun exec() {
+                program.write(1, 1)
+            }
+        }
+        instructionSet[4] = object : Instruction(2, this) {
+            override fun exec() {
+                output.add(getParam(1))
+            }
         }
     }
 }
