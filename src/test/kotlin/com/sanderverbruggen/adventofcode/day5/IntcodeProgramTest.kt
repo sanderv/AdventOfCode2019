@@ -20,4 +20,11 @@ internal class IntcodeProgramTest {
         assertThat(program.getParam(1)).isEqualTo(33)
         assertThat(program.getParam(2)).isEqualTo(3)
     }
+
+    @Test
+    internal fun `should run program with new params`() {
+        val program = IntcodeProgram("1002,4,3,4,33")
+        program.run()
+        assertThat(program.program).containsExactly(1002, 4, 3, 4, 99)
+    }
 }
