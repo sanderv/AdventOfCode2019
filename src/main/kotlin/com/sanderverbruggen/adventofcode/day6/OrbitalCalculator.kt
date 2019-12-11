@@ -27,12 +27,34 @@ class OrbitalCalculator {
         val centerObject = objectsMap.getOrPut(namePair.first, { SpaceObject(namePair.first) })
         val orbitObject = objectsMap.getOrPut(namePair.second, { SpaceObject(namePair.second) })
         centerObject.addOrbiter(orbitObject)
+        orbitObject.orbiting = centerObject
+    }
+
+    fun getNrOrbitTransfersToSAN(): Int {
+        val you = objectsMap["YOU"]!!
+        val san = objectsMap["SAN"]!!
+        you.onPath = true
+        san.onPath = true
+
+        val commonObject = objectsMap.values
+                .find { it.collision }!!
+
+        return you.orbiting!!.distanceFromCOM - commonObject.distanceFromCOM + san.orbiting!!.distanceFromCOM - commonObject.distanceFromCOM
     }
 
 }
 
 class SpaceObject(val name: String) {
     val objectsInOrbit: MutableList<SpaceObject> = mutableListOf()
+    var orbiting: SpaceObject? = null
+    var onPath: Boolean = false
+        set(value) {
+            field = value
+            if (objectsInOrbit.filter { it.onPath }.count() == 2)
+                collision = true
+            orbiting?.let { it.onPath = value }
+        }
+    var collision = false
     var distanceFromCOM = 0
         set(value) {
             field = value
@@ -51,4 +73,5 @@ class SpaceObject(val name: String) {
     override fun toString(): String {
         return "{ $name: { $objectsInOrbit } }"
     }
+
 }

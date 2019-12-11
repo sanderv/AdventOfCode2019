@@ -18,4 +18,18 @@ internal class Part1Test {
 
         assertThat(calculator.getNrDirectAndIndirectOrbits()).isEqualTo(224901)
     }
+
+    @Test
+    internal fun `should calculate orbits for part 2 example`() {
+        val calculator = OrbitalCalculator(readFile("day6/example2.txt"))
+
+        assertThat(calculator.getNrOrbitTransfersToSAN()).isEqualTo(4)
+    }
+
+    @Test
+    internal fun `part 2 solution`() {
+        val calculator = OrbitalCalculator(readFile("day6/input.txt"))
+
+        assertThat(calculator.getNrOrbitTransfersToSAN()).isEqualTo(334)
+    }
 }
