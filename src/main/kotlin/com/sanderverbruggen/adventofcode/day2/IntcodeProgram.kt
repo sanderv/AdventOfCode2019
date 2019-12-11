@@ -112,7 +112,6 @@ class InputInstruction(program: IntcodeProgram, private val nextInputValue: () -
 class OutputInstruction(program: IntcodeProgram) : Instruction(2, program) {
     override fun exec() {
         with(program) {
-            println(getParam(1))
             exitCode = getParam(1)
         }
     }
