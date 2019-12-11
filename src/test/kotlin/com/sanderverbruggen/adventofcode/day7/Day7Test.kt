@@ -1,5 +1,6 @@
 package com.sanderverbruggen.adventofcode.day7
 
+import com.sanderverbruggen.adventofcode.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -21,5 +22,11 @@ internal class Day7Test {
     )
     internal fun `should find answers to examples`(intCode: String, expectedAnswer: Int) {
         assertThat(AmplifierRunner(intCode).solve()).isEqualTo(expectedAnswer)
+    }
+
+    @Test
+    internal fun `day 7 part 1 solution`() {
+        val intCode = readFile("day7/input.txt")
+        assertThat(AmplifierRunner(intCode).solve()).isEqualTo(277328)
     }
 }

@@ -12,7 +12,6 @@ class AmplifierRunner(private val intCode: String) {
         inputs.map {
             ampOutput = MultiInputRunner(intCode, listOf(it, ampOutput)).run()
         }
-        println("$inputs -> $ampOutput")
         return ampOutput
     }
 }
