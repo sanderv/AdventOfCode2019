@@ -1,6 +1,5 @@
 package com.sanderverbruggen.adventofcode.day5
 
-import com.sanderverbruggen.adventofcode.day2.Instruction
 import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import com.sanderverbruggen.adventofcode.day2.ParamMode
 import com.sanderverbruggen.adventofcode.readFile
@@ -35,9 +34,7 @@ internal class IntcodeProgramTest {
     @Test
     internal fun `day 5 part 1 solution should be 7286649`() {
         val instructions = readFile("day5/input.txt")
-        val program = TestableIntcodeProgram(instructions, 1)
-        program.run()
-        assertThat(program.output.last()).isEqualTo(7286649)
+        assertThat(IntcodeProgram(instructions) { 1 }.run()).isEqualTo(7286649)
     }
 
     // Part 2
@@ -53,39 +50,14 @@ internal class IntcodeProgramTest {
             , delimiter = '|'
     )
     internal fun `day 5 part 2 examples`(instructions: String, inputResult1: Int, inputResult0: Int) {
-        with(TestableIntcodeProgram(instructions, inputResult1)) {
-            run()
-            assertThat(output.last()).isEqualTo(1)
-        }
+        assertThat(IntcodeProgram(instructions) { inputResult1 }.run()).isEqualTo(1)
 
-        with(TestableIntcodeProgram(instructions, inputResult0)) {
-            run()
-            assertThat(output.last()).isEqualTo(0)
-        }
+        assertThat(IntcodeProgram(instructions) { inputResult0 }.run()).isEqualTo(0)
     }
 
     @Test
     internal fun `day 5 part 2 solution`() {
         val instructions = readFile("day5/input.txt")
-        val program = TestableIntcodeProgram(instructions, 5)
-        program.run()
-        println(program.output)
-    }
-}
-
-internal class TestableIntcodeProgram(instructions: String, val input: Int) : IntcodeProgram(instructions) {
-    val output: MutableList<Int> = mutableListOf()
-
-    init {
-        instructionSet[3] = object : Instruction(2, this) {
-            override fun exec() {
-                program.write(input, 1)
-            }
-        }
-        instructionSet[4] = object : Instruction(2, this) {
-            override fun exec() {
-                output.add(getParam(1))
-            }
-        }
+        assertThat(IntcodeProgram(instructions) { 5 }.run()).isEqualTo(15724522)
     }
 }

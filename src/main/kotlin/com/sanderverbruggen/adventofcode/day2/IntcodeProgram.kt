@@ -2,13 +2,21 @@ package com.sanderverbruggen.adventofcode.day2
 
 import kotlin.math.pow
 
-open class IntcodeProgram(internal val program: IntArray) {
-    constructor(program: String) : this(program.split(",").map { it.toInt() }.toIntArray())
+open class IntcodeProgram(
+        internal val program: IntArray,
+        nextInputValue: () -> Int
+) {
+    constructor(program: String, nextInputValue: () -> Int = { 0 }) : this(
+            program.split(",").map { it.toInt() }.toIntArray(),
+            nextInputValue
+    )
+
+    var exitCode = 0
 
     internal var instructionSet = mutableMapOf(
             1 to AddInstruction(this),
             2 to MultiplyInstruction(this),
-            3 to InputInstruction(this),
+            3 to InputInstruction(this, nextInputValue),
             4 to OutputInstruction(this),
             5 to JumpIfTrueInstruction(this),
             6 to JumpIfFalseInstruction(this),
@@ -18,13 +26,14 @@ open class IntcodeProgram(internal val program: IntArray) {
 
     internal var instructionPointer = 0
 
-    fun run() {
+    fun run(): Int {
         while (getOpcode() != 99) {
             val instruction = instructionSet[getOpcode()] ?: throw RuntimeException("Unknown opcode ${getOpcode()}")
 
             instruction.exec()
             advance(instruction.skipInts)
         }
+        return exitCode
     }
 
     internal fun getOpcode() = getRawInstruction() % 100
@@ -48,12 +57,6 @@ open class IntcodeProgram(internal val program: IntArray) {
     private fun advance(steps: Int) {
         instructionPointer += steps
     }
-
-    // Test seam
-    protected open fun input(): Instruction = InputInstruction(this)
-
-    // Test seam
-    protected open fun output(): Instruction = OutputInstruction(this)
 
     override fun toString() = program.joinToString(",")
 }
@@ -100,12 +103,9 @@ class MultiplyInstruction(program: IntcodeProgram) : Instruction(4, program) {
     }
 }
 
-class InputInstruction(program: IntcodeProgram) : Instruction(2, program) {
+class InputInstruction(program: IntcodeProgram, private val nextInputValue: () -> Int) : Instruction(2, program) {
     override fun exec() {
-        with(program) {
-            print("> ")
-            write(readLine()!!.toInt(), 1)
-        }
+        program.write(nextInputValue(), 1)
     }
 }
 
@@ -113,6 +113,7 @@ class OutputInstruction(program: IntcodeProgram) : Instruction(2, program) {
     override fun exec() {
         with(program) {
             println(getParam(1))
+            exitCode = getParam(1)
         }
     }
 }
