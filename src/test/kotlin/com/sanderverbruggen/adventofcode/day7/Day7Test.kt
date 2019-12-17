@@ -7,12 +7,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 internal class Day7Test {
-    @Test
-    internal fun `should run program with multiple inputs`() {
-        val input = "3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0"
-        assertThat(MultiInputRunner(input, listOf(4, 1)).run()).isEqualTo(14)
-    }
-
     @ParameterizedTest
     @CsvSource(
             " 3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0 | 43210 ",
@@ -25,7 +19,7 @@ internal class Day7Test {
     }
 
     @Test
-    internal fun `day 7 part 1 solution`() {
+    internal fun `day 7 part 1 solution should be 277328`() {
         val intCode = readFile("day7/input.txt")
         assertThat(AmplifierRunner(intCode).solve()).isEqualTo(277328)
     }

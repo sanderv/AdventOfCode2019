@@ -1,23 +1,29 @@
 package com.sanderverbruggen.adventofcode.day2
 
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.math.pow
 
 open class IntcodeProgram(
-        internal val program: IntArray,
-        nextInputValue: () -> Int
+        programString: String,
+        private val inputChannel: Channel<Int> = Channel(),
+        private val outputChannel: Channel<Int> = Channel()
 ) {
-    constructor(program: String, nextInputValue: () -> Int = { 0 }) : this(
-            program.split(",").map { it.toInt() }.toIntArray(),
-            nextInputValue
-    )
+    constructor(programString: String, inputValue: Int) : this(programString, Channel()) {
+        runBlocking {
+            launch {
+                inputChannel.send(inputValue)
+            }
+        }
+    }
 
+    internal val program = programString.split(",").map { it.toInt() }.toIntArray()
     var exitCode = 0
 
     internal var instructionSet = mutableMapOf(
             1 to AddInstruction(this),
             2 to MultiplyInstruction(this),
-            3 to InputInstruction(this, nextInputValue),
-            4 to OutputInstruction(this),
             5 to JumpIfTrueInstruction(this),
             6 to JumpIfFalseInstruction(this),
             7 to LessThanInstruction(this),
@@ -26,14 +32,37 @@ open class IntcodeProgram(
 
     internal var instructionPointer = 0
 
-    fun run(): Int {
+    suspend fun suspendedRun(): Int {
         while (getOpcode() != 99) {
-            val instruction = instructionSet[getOpcode()] ?: throw RuntimeException("Unknown opcode ${getOpcode()}")
-
-            instruction.exec()
-            advance(instruction.skipInts)
+            val skipInts = when (getOpcode()) {
+                3 -> readInput()
+                4 -> sendOutput()
+                else -> {
+                    val instruction = instructionSet[getOpcode()]
+                            ?: throw RuntimeException("Unknown opcode ${getOpcode()}")
+                    instruction.exec()
+                    instruction.skipInts
+                }
+            }
+            advance(skipInts)
         }
         return exitCode
+    }
+
+    fun run(): Int = runBlocking {
+        suspendedRun()
+    }
+
+    internal suspend fun readInput(): Int {
+        write(inputChannel.receive(), 1)
+        return 2
+    }
+
+    internal suspend fun sendOutput(): Int {
+        val value = getParam(1)
+        outputChannel.send(value)
+        exitCode = value
+        return 2
     }
 
     internal fun getOpcode() = getRawInstruction() % 100
@@ -99,20 +128,6 @@ class MultiplyInstruction(program: IntcodeProgram) : Instruction(4, program) {
     override fun exec() {
         with(program) {
             write(getParam(1) * getParam(2), 3)
-        }
-    }
-}
-
-class InputInstruction(program: IntcodeProgram, private val nextInputValue: () -> Int) : Instruction(2, program) {
-    override fun exec() {
-        program.write(nextInputValue(), 1)
-    }
-}
-
-class OutputInstruction(program: IntcodeProgram) : Instruction(2, program) {
-    override fun exec() {
-        with(program) {
-            exitCode = getParam(1)
         }
     }
 }
