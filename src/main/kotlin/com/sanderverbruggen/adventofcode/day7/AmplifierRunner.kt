@@ -16,16 +16,18 @@ class AmplifierRunner(private val intCode: String) {
     internal fun runAmpChain(phases: List<Int>): Int {
         return runBlocking {
             val channels = phases.map { phase -> Channel<Int>(4).apply { send(phase) } }.toMutableList()
-            channels.add(Channel<Int>(4)) // the output channel
             channels.first().send(0) // initial input
-            for (index in 0 until phases.size) {
-                launch {
-                    val program = IntcodeProgram(intCode, channels[index], channels[index + 1])
-                    program.suspendedRun()
+            runBlocking {
+                for (index in 0 until phases.size) {
+                    launch {
+                        val outputIndex = if (index == phases.size - 1) 0 else index + 1
+                        val program = IntcodeProgram(intCode, channels[index], channels[outputIndex])
+                        program.suspendedRun()
+                    }
                 }
             }
 
-            channels.last().receive()
+            channels.first().receive()
         }
     }
 }
