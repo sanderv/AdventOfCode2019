@@ -15,7 +15,7 @@ class Day8Test {
     }
 
     @Test
-    internal fun `day 8 part 1 solution should be`() {
+    internal fun `day 8 part 1 solution should be 1224`() {
         val spaceImageFormat = SpaceImageFormat(input, 25, 6)
         val answer = spaceImageFormat.layers
                 .map {
@@ -26,6 +26,20 @@ class Day8Test {
                 }
                 .minBy { it.first }
                 ?.second ?: -1
-        println(answer)
+        assertThat(answer).isEqualTo(1224)
+    }
+
+    @Test
+    internal fun `should render sample image`() {
+        val spaceImageFormat = SpaceImageFormat("0222112222120000", 2, 2)
+        val image = spaceImageFormat.getImage()
+
+        assertThat(image).isEqualTo("01\n10")
+    }
+
+    @Test
+    internal fun `day 8 part 2 solution should be`() {
+        val answer = SpaceImageFormat(input, 25, 6).getImage()
+        println(answer.replace('0', ' '))
     }
 }
