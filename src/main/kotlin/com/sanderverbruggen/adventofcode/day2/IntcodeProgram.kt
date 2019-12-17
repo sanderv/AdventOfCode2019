@@ -46,7 +46,6 @@ open class IntcodeProgram(
             }
             advance(skipInts)
         }
-        println("Exited")
         return exitCode
     }
 
@@ -61,10 +60,8 @@ open class IntcodeProgram(
 
     internal suspend fun sendOutput(): Int {
         val value = getParam(1)
-        println("Sending $value")
         outputChannel.send(value)
         exitCode = value
-        println("Sent $value")
         return 2
     }
 

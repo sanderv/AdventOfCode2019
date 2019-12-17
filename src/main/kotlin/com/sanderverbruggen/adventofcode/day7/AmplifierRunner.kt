@@ -13,6 +13,13 @@ class AmplifierRunner(private val intCode: String) {
                 .max() ?: -1
     }
 
+    fun solveLoopback(): Int {
+        return permute(listOf(5, 6, 7, 8, 9))
+                .map { runAmpChain(it) }
+                .max() ?: -1
+    }
+
+
     internal fun runAmpChain(phases: List<Int>): Int {
         return runBlocking {
             val channels = phases.map { phase -> Channel<Int>(4).apply { send(phase) } }.toMutableList()
