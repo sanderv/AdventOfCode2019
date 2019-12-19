@@ -6,28 +6,29 @@ import kotlin.math.pow
 
 open class IntcodeProgram(
         programString: String,
-        val inputChannel: Channel<Int> = Channel(4),
-        val outputChannel: Channel<Int> = Channel(4)
+        val inputChannel: Channel<Long> = Channel(4),
+        val outputChannel: Channel<Long> = Channel(4)
 ) {
-    internal val program = programString.split(",").map { it.toInt() }.toIntArray()
-    var exitCode = 0
+    internal val program = programString.split(",").map { it.toLong() }.toLongArray()
+    internal var instructionPointer = 0
+    internal var relativeBase = 0
+    var exitCode = 0L
 
     internal var instructionSet = mutableMapOf(
-            1 to AddInstruction(this),
-            2 to MultiplyInstruction(this),
-            5 to JumpIfTrueInstruction(this),
-            6 to JumpIfFalseInstruction(this),
-            7 to LessThanInstruction(this),
-            8 to EqualsInstruction(this)
+            1L to AddInstruction(this),
+            2L to MultiplyInstruction(this),
+            5L to JumpIfTrueInstruction(this),
+            6L to JumpIfFalseInstruction(this),
+            7L to LessThanInstruction(this),
+            8L to EqualsInstruction(this),
+            9L to AdjustRelativeBaseInstruction(this)
     )
 
-    internal var instructionPointer = 0
-
-    suspend fun suspendedRun(): Int {
-        while (getOpcode() != 99) {
+    suspend fun suspendedRun(): Long {
+        while (getOpcode() != 99L) {
             val skipInts = when (getOpcode()) {
-                3 -> readInput()
-                4 -> sendOutput()
+                3L -> readInput()
+                4L -> sendOutput()
                 else -> {
                     val instruction = instructionSet[getOpcode()]
                             ?: throw RuntimeException("Unknown opcode ${getOpcode()}")
@@ -37,11 +38,13 @@ open class IntcodeProgram(
             }
             advance(skipInts)
         }
+        inputChannel.close()
+        outputChannel.close()
         return exitCode
     }
 
     fun run(): Int = runBlocking {
-        suspendedRun()
+        suspendedRun().toInt()
     }
 
     internal suspend fun readInput(): Int {
@@ -62,15 +65,16 @@ open class IntcodeProgram(
 
     internal fun getRawInstruction() = program[instructionPointer]
 
-    internal fun getParam(paramNr: Int): Int {
+    internal fun getParam(paramNr: Int): Long {
         return when (getParamMode(paramNr)) {
-            ParamMode.POSITION -> program[program[instructionPointer + paramNr]]
+            ParamMode.POSITION -> program[program[instructionPointer + paramNr].toInt()]
             ParamMode.IMMEDIATE -> program[instructionPointer + paramNr]
+            ParamMode.RELATIVE -> program[relativeBase + program[instructionPointer + paramNr].toInt()]
         }
     }
 
-    internal fun write(value: Int, targetParam: Int) {
-        val targetAddress = program[instructionPointer + targetParam]
+    internal fun write(value: Long, targetParam: Int) {
+        val targetAddress = program[instructionPointer + targetParam].toInt()
         program[targetAddress] = value
     }
 
@@ -96,7 +100,7 @@ enum class Opcode(private val code: Int) {
 }
 
 enum class ParamMode(val code: Int) {
-    POSITION(0), IMMEDIATE(1);
+    POSITION(0), IMMEDIATE(1), RELATIVE(2);
 
     companion object {
         fun byCode(code: Int) = values().first { it.code == code }
@@ -126,8 +130,8 @@ class MultiplyInstruction(program: IntcodeProgram) : Instruction(4, program) {
 class JumpIfTrueInstruction(program: IntcodeProgram) : Instruction(3, program) {
     override fun exec() {
         with(program) {
-            if (getParam(1) != 0) {
-                instructionPointer = getParam(2)
+            if (getParam(1) != 0L) {
+                instructionPointer = getParam(2).toInt()
                 skipInts = 0 // already jumped
             } else {
                 skipInts = 3 // no jump, advance to next instruction
@@ -139,8 +143,8 @@ class JumpIfTrueInstruction(program: IntcodeProgram) : Instruction(3, program) {
 class JumpIfFalseInstruction(program: IntcodeProgram) : Instruction(3, program) {
     override fun exec() {
         with(program) {
-            if (getParam(1) == 0) {
-                instructionPointer = getParam(2)
+            if (getParam(1) == 0L) {
+                instructionPointer = getParam(2).toInt()
                 skipInts = 0 // already jumped
             } else {
                 skipInts = 3 // no jump, advance to next instruction
@@ -152,7 +156,7 @@ class JumpIfFalseInstruction(program: IntcodeProgram) : Instruction(3, program) 
 class LessThanInstruction(program: IntcodeProgram) : Instruction(4, program) {
     override fun exec() {
         with(program) {
-            val value = if (getParam(1) < getParam(2)) 1 else 0
+            val value = if (getParam(1) < getParam(2)) 1L else 0L
             write(value, 3)
         }
     }
@@ -161,8 +165,16 @@ class LessThanInstruction(program: IntcodeProgram) : Instruction(4, program) {
 class EqualsInstruction(program: IntcodeProgram) : Instruction(4, program) {
     override fun exec() {
         with(program) {
-            val value = if (getParam(1) == getParam(2)) 1 else 0
+            val value = if (getParam(1) == getParam(2)) 1L else 0L
             write(value, 3)
+        }
+    }
+}
+
+class AdjustRelativeBaseInstruction(program: IntcodeProgram) : Instruction(2, program) {
+    override fun exec() {
+        with(program) {
+            relativeBase += getParam(1).toInt()
         }
     }
 }

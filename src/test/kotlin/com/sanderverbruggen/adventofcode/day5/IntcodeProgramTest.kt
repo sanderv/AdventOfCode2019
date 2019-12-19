@@ -62,7 +62,7 @@ internal class IntcodeProgramTest {
             " 3,3,1105,-1,9,1101,0,0,12,4,12,99,1 | 0 | 0 "
             , delimiter = '|'
     )
-    internal fun `day 5 part 2 examples`(instructions: String, input: Int, expectedResult: Int) {
+    internal fun `day 5 part 2 examples`(instructions: String, input: Long, expectedResult: Long) {
         val intcodeProgram = IntcodeProgram(instructions)
         val result = runBlocking {
             intcodeProgram.inputChannel.send(input)
