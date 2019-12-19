@@ -9,7 +9,7 @@ open class IntcodeProgram(
         val inputChannel: Channel<Long> = Channel(4),
         val outputChannel: Channel<Long> = Channel(4)
 ) {
-    internal val program = programString.split(",").map { it.toLong() }.toLongArray()
+    internal val program = Memory(programString)
     internal var instructionPointer = 0
     internal var relativeBase = 0
     var exitCode = 0L
@@ -38,8 +38,6 @@ open class IntcodeProgram(
             }
             advance(skipInts)
         }
-        inputChannel.close()
-        outputChannel.close()
         return exitCode
     }
 
@@ -56,6 +54,7 @@ open class IntcodeProgram(
         val value = getParam(1)
         outputChannel.send(value)
         exitCode = value
+        println("Sent: $value")
         return 2
     }
 
@@ -82,7 +81,8 @@ open class IntcodeProgram(
         instructionPointer += steps
     }
 
-    override fun toString() = program.joinToString(",")
+    fun memoryDump() = program.memoryDump()
+    override fun toString() = program.toString()
 }
 
 enum class Opcode(private val code: Int) {
@@ -177,4 +177,25 @@ class AdjustRelativeBaseInstruction(program: IntcodeProgram) : Instruction(2, pr
             relativeBase += getParam(1).toInt()
         }
     }
+}
+
+class Memory(programString: String) {
+    val memory = programString
+            .split(",")
+            .mapIndexed() { index, value -> index to value.toLong() }
+            .toMap()
+            .toMutableMap()
+
+    operator fun get(index: Int) = memory.getOrDefault(index, 0)
+    operator fun set(index: Int, value: Long) = memory.set(index, value)
+
+    fun memoryDump(): List<Long> {
+        return memory
+                .entries
+                .sortedBy { it.key }
+                .map { it.value }
+    }
+
+    override fun toString() = memoryDump()
+            .joinToString(",")
 }

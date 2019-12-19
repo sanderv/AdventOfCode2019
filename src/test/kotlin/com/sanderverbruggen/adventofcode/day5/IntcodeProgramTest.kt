@@ -30,7 +30,7 @@ internal class IntcodeProgramTest {
     internal fun `should run program with new params`() {
         val program = IntcodeProgram("1002,4,3,4,33")
         program.run()
-        assertThat(program.program).containsExactly(1002, 4, 3, 4, 99)
+        assertThat(program.memoryDump()).containsExactly(1002, 4, 3, 4, 99)
     }
 
     @Test
