@@ -12,9 +12,9 @@ open class IntcodeProgram(
     internal val program = Memory(programString)
     internal var instructionPointer = 0
     internal var relativeBase = 0
-    var exitCode = 0L
+    private var exitCode = 0L
 
-    internal var instructionSet = mutableMapOf(
+    private var instructionSet = mutableMapOf(
             1L to AddInstruction(this),
             2L to MultiplyInstruction(this),
             5L to JumpIfTrueInstruction(this),
@@ -45,27 +45,26 @@ open class IntcodeProgram(
         suspendedRun().toInt()
     }
 
-    internal suspend fun readInput(): Int {
+    private suspend fun readInput(): Int {
         write(inputChannel.receive(), 1)
         return 2
     }
 
-    internal suspend fun sendOutput(): Int {
+    private suspend fun sendOutput(): Int {
         val value = getParam(1)
         outputChannel.send(value)
         exitCode = value
-        println("Sent: $value")
         return 2
     }
 
-    internal fun getOpcode() = getRawInstruction() % 100
+    private fun getOpcode() = getRawInstruction() % 100
 
     internal fun getParamMode(paramNr: Int) = ParamMode.byCode((getRawInstruction() / 10.0.pow(paramNr + 1) % 10).toInt())
 
-    internal fun getRawInstruction() = program[instructionPointer]
+    private fun getRawInstruction() = program[instructionPointer]
 
     internal fun getParam(paramNr: Int): Long = program[getParamPointer(paramNr)]
-    internal fun getParamPointer(paramNr: Int): Int {
+    private fun getParamPointer(paramNr: Int): Int {
         return when (getParamMode(paramNr)) {
             ParamMode.POSITION -> program[instructionPointer + paramNr].toInt()
             ParamMode.IMMEDIATE -> instructionPointer + paramNr
@@ -83,20 +82,6 @@ open class IntcodeProgram(
 
     fun memoryDump() = program.memoryDump()
     override fun toString() = program.toString()
-}
-
-enum class Opcode(private val code: Int) {
-    ADD(1),
-    MULTIPLY(2),
-    INPUT(3),
-    OUTPUT(4),
-    JUMP_IF_TRUE(5),
-    JUMP_IF_FALSE(6),
-    END(99);
-
-    companion object {
-        fun byCode(code: Int) = values().first { it.code == code }
-    }
 }
 
 enum class ParamMode(val code: Int) {
@@ -180,9 +165,9 @@ class AdjustRelativeBaseInstruction(program: IntcodeProgram) : Instruction(2, pr
 }
 
 class Memory(programString: String) {
-    val memory = programString
+    private val memory = programString
             .split(",")
-            .mapIndexed() { index, value -> index to value.toLong() }
+            .mapIndexed { index, value -> index to value.toLong() }
             .toMap()
             .toMutableMap()
 

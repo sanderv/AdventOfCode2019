@@ -2,10 +2,12 @@ package com.sanderverbruggen.adventofcode.day7
 
 import com.sanderverbruggen.adventofcode.readFile
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
+@Tag("IntCode")
 internal class Day7Test {
     @ParameterizedTest
     @CsvSource(

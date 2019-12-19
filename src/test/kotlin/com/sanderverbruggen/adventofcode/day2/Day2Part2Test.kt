@@ -2,9 +2,11 @@ package com.sanderverbruggen.adventofcode.day2
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
-@DisplayName("Day 1 Part 2's")
+@DisplayName("Day 2 Part 2's")
+@Tag("IntCode")
 class Day2Part2Test {
     @Test
     internal fun `final answer should be 4259`() {

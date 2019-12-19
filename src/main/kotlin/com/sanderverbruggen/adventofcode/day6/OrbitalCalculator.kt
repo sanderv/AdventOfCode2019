@@ -1,9 +1,9 @@
 package com.sanderverbruggen.adventofcode.day6
 
-class OrbitalCalculator {
-    internal val objectsMap: MutableMap<String, SpaceObject> = mutableMapOf()
+class OrbitalCalculator(input: String) {
+    private val objectsMap: MutableMap<String, SpaceObject> = mutableMapOf()
 
-    constructor(input: String) {
+    init {
         input.lines()
                 .map { inputLine ->
                     val centerName = inputLine.split(')')[0]
@@ -13,7 +13,6 @@ class OrbitalCalculator {
                 .forEach { spaceObject ->
                     addToMap(spaceObject)
                 }
-
         getCOM().distanceFromCOM = 0
     }
 
@@ -21,9 +20,9 @@ class OrbitalCalculator {
         return getCOM().getNrDirectAndIndirectOrbits()
     }
 
-    internal fun getCOM() = objectsMap["COM"]!!
+    private fun getCOM() = objectsMap["COM"]!!
 
-    internal fun addToMap(namePair: Pair<String, String>) {
+    private fun addToMap(namePair: Pair<String, String>) {
         val centerObject = objectsMap.getOrPut(namePair.first, { SpaceObject(namePair.first) })
         val orbitObject = objectsMap.getOrPut(namePair.second, { SpaceObject(namePair.second) })
         centerObject.addOrbiter(orbitObject)
@@ -44,8 +43,8 @@ class OrbitalCalculator {
 
 }
 
-class SpaceObject(val name: String) {
-    val objectsInOrbit: MutableList<SpaceObject> = mutableListOf()
+class SpaceObject(private val name: String) {
+    private val objectsInOrbit: MutableList<SpaceObject> = mutableListOf()
     var orbiting: SpaceObject? = null
     var onPath: Boolean = false
         set(value) {

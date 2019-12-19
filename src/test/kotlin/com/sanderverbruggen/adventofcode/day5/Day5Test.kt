@@ -6,11 +6,13 @@ import com.sanderverbruggen.adventofcode.readFile
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-internal class IntcodeProgramTest {
+@Tag("IntCode")
+internal class Day5Test {
     @Test
     internal fun `should get correct param mode`() {
         val program = IntcodeProgram("1002")

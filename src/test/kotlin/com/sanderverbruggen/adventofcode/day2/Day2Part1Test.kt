@@ -2,11 +2,13 @@ package com.sanderverbruggen.adventofcode.day2
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 @DisplayName("Day 2 Part 1's")
+@Tag("IntCode")
 class Day2Part1Test {
     @ParameterizedTest
     @CsvSource(
@@ -19,7 +21,7 @@ class Day2Part1Test {
     internal fun `examples should work`(intcode: String, expectedResult: String) {
         val program = IntcodeProgram(intcode)
         program.run()
-        assertThat(program.toString()).isEqualTo(expectedResult);
+        assertThat(program.toString()).isEqualTo(expectedResult)
     }
 
     @Test

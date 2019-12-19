@@ -1,13 +1,11 @@
 package com.sanderverbruggen.adventofcode.day3
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-@Disabled
 class Day3Test {
     @Test
     internal fun `path should be rendered as coordinates`() {

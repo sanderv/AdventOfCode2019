@@ -20,7 +20,7 @@ class AmplifierRunner(private val intCode: String) {
     }
 
 
-    internal fun runAmpChain(phases: List<Int>): Long {
+    private fun runAmpChain(phases: List<Int>): Long {
         return runBlocking {
             val channels = phases.map { phase -> Channel<Long>(4).apply { send(phase.toLong()) } }.toMutableList()
             channels.first().send(0L) // initial input

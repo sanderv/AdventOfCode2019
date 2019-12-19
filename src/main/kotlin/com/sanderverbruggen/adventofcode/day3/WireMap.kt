@@ -1,6 +1,6 @@
 package com.sanderverbruggen.adventofcode.day3
 
-import java.lang.Math.abs
+import kotlin.math.abs
 
 class Map(
         private val path1: Path,
@@ -27,9 +27,9 @@ class Map(
 }
 
 class Path {
-    var currentPoint = Point(0, 0)
+    private var currentPoint = Point(0, 0)
+    private val pointCache: MutableMap<Int, MutableMap<Int, Point>> = mutableMapOf()
     val steps: MutableList<Point> = mutableListOf()
-    val pointCache: MutableMap<Int, MutableMap<Int, Point>> = mutableMapOf()
 
     fun addStep(instruction: String) {
         val direction = Direction.valueOf(instruction[0].toString())
@@ -53,7 +53,7 @@ class Path {
 
     private fun addToCache(point: Point) {
         pointCache[point.x] = pointCache[point.x] ?: mutableMapOf()
-        pointCache.get(point.x)?.put(point.y, point)
+        pointCache[point.x]?.put(point.y, point)
     }
 
     fun findNearestManhattanCrossingDistance(other: Path): Int {
@@ -70,7 +70,7 @@ class Path {
                 .min() ?: throw RuntimeException("No crossing found")
     }
 
-    internal fun findPoint(point: Point): Point = steps.find { point.equals(it) }
+    internal fun findPoint(point: Point): Point = steps.find { point == it }
             ?: throw RuntimeException("Point not found")
 }
 
