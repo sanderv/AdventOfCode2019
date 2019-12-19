@@ -37,12 +37,23 @@ class Day9Test {
 
     @Test
     internal fun `part 1 solution should be 2775723069`() {
+        val result = runWithInput(1)
+        assertThat(result).isEqualTo(2775723069)
+    }
+
+    @Test
+    internal fun `part 2 solution should be 49115`() {
+        val result = runWithInput(2)
+        assertThat(result).isEqualTo(49115L)
+    }
+
+    private fun runWithInput(programInput: Long): Long {
         val intCode = readFile("day9/input.txt")
         val result = runBlocking {
             IntcodeProgram(intCode)
-                    .apply { inputChannel.send(1) }
+                    .apply { inputChannel.send(programInput) }
                     .suspendedRun()
         }
-        assertThat(result).isEqualTo(2775723069)
+        return result
     }
 }
