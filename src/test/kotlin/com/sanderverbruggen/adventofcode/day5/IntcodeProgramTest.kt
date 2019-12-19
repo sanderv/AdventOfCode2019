@@ -3,6 +3,8 @@ package com.sanderverbruggen.adventofcode.day5
 import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import com.sanderverbruggen.adventofcode.day2.ParamMode
 import com.sanderverbruggen.adventofcode.readFile
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -34,30 +36,49 @@ internal class IntcodeProgramTest {
     @Test
     internal fun `day 5 part 1 solution should be 7286649`() {
         val instructions = readFile("day5/input.txt")
-        assertThat(IntcodeProgram(instructions, 1).run()).isEqualTo(7286649)
+        val intcodeProgram = IntcodeProgram(instructions, outputChannel = Channel(20))
+        val result = runBlocking {
+            intcodeProgram.inputChannel.send(1)
+            intcodeProgram.run()
+        }
+        assertThat(result).isEqualTo(7286649)
     }
 
     // Part 2
 
     @ParameterizedTest
     @CsvSource(
-            " 3,9,8,9,10,9,4,9,99,-1,8 | 8 | 7 ",
-            " 3,9,7,9,10,9,4,9,99,-1,8 | 7 | 9 ",
-            " 3,3,1108,-1,8,3,4,3,99   | 8 | 7 ",
-            " 3,3,1107,-1,8,3,4,3,99   | 7 | 9 ",
-            " 3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9 | 1 | 0 ",
-            " 3,3,1105,-1,9,1101,0,0,12,4,12,99,1 | 1 | 0 "
+            " 3,9,8,9,10,9,4,9,99,-1,8 | 8 | 1 ",
+            " 3,9,8,9,10,9,4,9,99,-1,8 | 7 | 0 ",
+            " 3,9,7,9,10,9,4,9,99,-1,8 | 7 | 1 ",
+            " 3,9,7,9,10,9,4,9,99,-1,8 | 9 | 0 ",
+            " 3,3,1108,-1,8,3,4,3,99   | 8 | 1 ",
+            " 3,3,1108,-1,8,3,4,3,99   | 7 | 0 ",
+            " 3,3,1107,-1,8,3,4,3,99   | 7 | 1 ",
+            " 3,3,1107,-1,8,3,4,3,99   | 9 | 0 ",
+            " 3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9 | 1 | 1 ",
+            " 3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9 | 0 | 0 ",
+            " 3,3,1105,-1,9,1101,0,0,12,4,12,99,1 | 1 | 1 ",
+            " 3,3,1105,-1,9,1101,0,0,12,4,12,99,1 | 0 | 0 "
             , delimiter = '|'
     )
-    internal fun `day 5 part 2 examples`(instructions: String, inputResult1: Int, inputResult0: Int) {
-        assertThat(IntcodeProgram(instructions, inputResult1).run()).isEqualTo(1)
-
-        assertThat(IntcodeProgram(instructions, inputResult0).run()).isEqualTo(0)
+    internal fun `day 5 part 2 examples`(instructions: String, input: Int, expectedResult: Int) {
+        val intcodeProgram = IntcodeProgram(instructions)
+        val result = runBlocking {
+            intcodeProgram.inputChannel.send(input)
+            intcodeProgram.run()
+        }
+        assertThat(result).isEqualTo(expectedResult)
     }
 
     @Test
     internal fun `day 5 part 2 solution`() {
         val instructions = readFile("day5/input.txt")
-        assertThat(IntcodeProgram(instructions, 5).run()).isEqualTo(15724522)
+        val intcodeProgram = IntcodeProgram(instructions)
+        val result = runBlocking {
+            intcodeProgram.inputChannel.send(5)
+            intcodeProgram.run()
+        }
+        assertThat(result).isEqualTo(15724522)
     }
 }

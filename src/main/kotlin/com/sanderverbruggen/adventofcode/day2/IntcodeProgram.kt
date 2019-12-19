@@ -1,23 +1,14 @@
 package com.sanderverbruggen.adventofcode.day2
 
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.math.pow
 
 open class IntcodeProgram(
         programString: String,
-        private val inputChannel: Channel<Int> = Channel(),
-        private val outputChannel: Channel<Int> = Channel()
+        val inputChannel: Channel<Int> = Channel(4),
+        val outputChannel: Channel<Int> = Channel(4)
 ) {
-    constructor(programString: String, inputValue: Int) : this(programString, Channel()) {
-        runBlocking {
-            launch {
-                inputChannel.send(inputValue)
-            }
-        }
-    }
-
     internal val program = programString.split(",").map { it.toInt() }.toIntArray()
     var exitCode = 0
 
