@@ -4,7 +4,7 @@ import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import com.sanderverbruggen.adventofcode.readFile
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -21,7 +21,7 @@ class Day9Test {
     internal fun `should find answers to part 1 examples`(intCode: String, expectedAnswer: Long) {
         val program = IntcodeProgram(intCode)
         val answer = runBlocking { program.suspendedRun() }
-        Assertions.assertThat(answer).isEqualTo(expectedAnswer)
+        assertThat(answer).isEqualTo(expectedAnswer)
     }
 
     @Test
@@ -32,17 +32,17 @@ class Day9Test {
         val result = runBlocking {
             program.suspendedRun()
         }
-        Assertions.assertThat(program.toString()).isEqualTo(intCode)
+        assertThat(program.toString()).isEqualTo(intCode)
     }
 
     @Test
-    internal fun `part 1 solution should be`() {
+    internal fun `part 1 solution should be 2775723069`() {
         val intCode = readFile("day9/input.txt")
         val result = runBlocking {
             IntcodeProgram(intCode)
                     .apply { inputChannel.send(1) }
                     .suspendedRun()
         }
-        println(result)
+        assertThat(result).isEqualTo(2775723069)
     }
 }

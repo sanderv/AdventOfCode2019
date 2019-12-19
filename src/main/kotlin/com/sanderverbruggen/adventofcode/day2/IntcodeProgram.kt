@@ -64,17 +64,17 @@ open class IntcodeProgram(
 
     internal fun getRawInstruction() = program[instructionPointer]
 
-    internal fun getParam(paramNr: Int): Long {
+    internal fun getParam(paramNr: Int): Long = program[getParamPointer(paramNr)]
+    internal fun getParamPointer(paramNr: Int): Int {
         return when (getParamMode(paramNr)) {
-            ParamMode.POSITION -> program[program[instructionPointer + paramNr].toInt()]
-            ParamMode.IMMEDIATE -> program[instructionPointer + paramNr]
-            ParamMode.RELATIVE -> program[relativeBase + program[instructionPointer + paramNr].toInt()]
+            ParamMode.POSITION -> program[instructionPointer + paramNr].toInt()
+            ParamMode.IMMEDIATE -> instructionPointer + paramNr
+            ParamMode.RELATIVE -> relativeBase + program[instructionPointer + paramNr].toInt()
         }
     }
 
     internal fun write(value: Long, targetParam: Int) {
-        val targetAddress = program[instructionPointer + targetParam].toInt()
-        program[targetAddress] = value
+        program[getParamPointer(targetParam)] = value
     }
 
     private fun advance(steps: Int) {
