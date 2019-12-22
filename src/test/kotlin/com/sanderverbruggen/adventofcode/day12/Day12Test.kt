@@ -51,4 +51,19 @@ class Day12Test {
         }
         assertThat(system.totalEnergy()).isEqualTo(1940)
     }
+
+    @Test
+    internal fun `part 1 solution should be 6678`() {
+        val system = System(listOf(
+                Moon(x = -10, y = -10, z = -13),
+                Moon(x = 5, y = 5, z = -9),
+                Moon(x = 3, y = 8, z = -16),
+                Moon(x = 1, y = 3, z = -3)
+        ))
+
+        repeat(1000) {
+            system.nextStep()
+        }
+        assertThat(system.totalEnergy()).isEqualTo(6678)
+    }
 }
