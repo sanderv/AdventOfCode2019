@@ -3,16 +3,17 @@ package com.sanderverbruggen.adventofcode.day10
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class Day10Test {
-    @Test
-    internal fun `should find asteroids`() {
-        val mapString = """
+internal class Day10Test {
+    private val mapString = """
             .#..#
             .....
             #####
             ....#
             ...##
         """.trimIndent()
+
+    @Test
+    internal fun `should find asteroids`() {
         val map = AsteroidMap(mapString)
 
         assertThat(map.asteroids).containsExactlyInAnyOrder(
@@ -27,5 +28,42 @@ class Day10Test {
                 Asteroid(3, 4),
                 Asteroid(4, 4)
         )
+    }
+
+    @Test
+    internal fun `should find best asteroid in simple example`() {
+        val map = AsteroidMap(mapString)
+
+        assertThat(map.findAsteroidWithMostDetected()).isEqualTo(Asteroid(3, 4))
+        assertThat(map.findAsteroidWithMostDetected().nrOfDetectableAsteroids()).isEqualTo(8)
+    }
+
+    @Test
+    internal fun `should find best asteroid in big example`() {
+        val map = AsteroidMap("""
+            .#..##.###...#######
+            ##.############..##.
+            .#.######.########.#
+            .###.#######.####.#.
+            #####.##.#.##.###.##
+            ..#####..#.#########
+            ####################
+            #.####....###.#.#.##
+            ##.#################
+            #####.##.###..####..
+            ..######..##.#######
+            ####.##.####...##..#
+            .#####..#.######.###
+            ##...#.##########...
+            #.##########.#######
+            .####.#.###.###.#.##
+            ....##.##.###..#####
+            .#.#.###########.###
+            #.#.#.#####.####.###
+            ###.##.####.##.#..##
+        """.trimIndent())
+
+        assertThat(map.findAsteroidWithMostDetected()).isEqualTo(Asteroid(11, 13))
+        assertThat(map.findAsteroidWithMostDetected().nrOfDetectableAsteroids()).isEqualTo(210)
     }
 }
