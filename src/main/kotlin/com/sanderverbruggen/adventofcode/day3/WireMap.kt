@@ -32,15 +32,10 @@ class Path {
     val steps: MutableList<Point> = mutableListOf()
 
     fun addStep(instruction: String) {
-        val direction = Direction.valueOf(instruction[0].toString())
+        val direction = Direction.byCode(instruction[0].toString())
         val distance = instruction.drop(1).toInt()
         repeat(distance) {
-            val nextPoint = when (direction) {
-                Direction.L -> Point(currentPoint.x - 1, currentPoint.y)
-                Direction.R -> Point(currentPoint.x + 1, currentPoint.y)
-                Direction.U -> Point(currentPoint.x, currentPoint.y + 1)
-                Direction.D -> Point(currentPoint.x, currentPoint.y - 1)
-            }
+            val nextPoint = currentPoint.move(direction)
             // This should find a previous "encounter" of this point, according to the specs:
             // If a wire visits a position on the grid multiple times, use the steps value from the first time it visits that position when calculating the total value of a specific intersection.
             // But the site does't accept that answer
@@ -75,11 +70,16 @@ class Path {
 }
 
 class Point(val x: Int, val y: Int, val stepsFromStart: Int = 0) {
-
-    override fun toString(): String {
-        return "($x, $y) -> $stepsFromStart"
+    fun move(direction: Direction): Point {
+        return when (direction) {
+            Direction.LEFT -> Point(x - 1, y)
+            Direction.RIGHT -> Point(x + 1, y)
+            Direction.UP -> Point(x, y + 1)
+            Direction.DOWN -> Point(x, y - 1)
+        }
     }
 
+    override fun toString() = "($x, $y)"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -100,4 +100,21 @@ class Point(val x: Int, val y: Int, val stepsFromStart: Int = 0) {
     }
 }
 
-enum class Direction { L, R, U, D }
+enum class Direction(private val code: String) {
+    UP("U"), RIGHT("R"), DOWN("D"), LEFT("L");
+
+    companion object {
+        fun byCode(code: String) = values().first { it.code == code }
+    }
+
+    /**
+     * @param turn 0 = left, 1 = right
+     */
+    fun turn(turn: Int): Direction {
+        var newOrdinal = this.ordinal + if (turn == 0) -1 else 1
+        if (newOrdinal >= values().size) newOrdinal = 0
+        if (newOrdinal < 0) newOrdinal = values().size - 1
+
+        return values()[newOrdinal]
+    }
+}

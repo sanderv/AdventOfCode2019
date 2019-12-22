@@ -33,7 +33,7 @@ class Day3Test {
         assertAll(
                 { assertThat(path.findPoint(Point(3, 1)).stepsFromStart).isEqualTo(10) },
                 { assertThat(path.findPoint(Point(3, 0)).stepsFromStart).isEqualTo(3) },
-                { assertThat(path.findPoint(Point(3, -1)).stepsFromStart).isEqualTo(4) }
+                { assertThat(path.findPoint(Point(3, -1)).stepsFromStart).isEqualTo(12) }
         )
 
 
