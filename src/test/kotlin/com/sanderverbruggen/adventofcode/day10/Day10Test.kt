@@ -1,5 +1,6 @@
 package com.sanderverbruggen.adventofcode.day10
 
+import com.sanderverbruggen.adventofcode.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -65,5 +66,11 @@ internal class Day10Test {
 
         assertThat(map.findAsteroidWithMostDetected()).isEqualTo(Asteroid(11, 13))
         assertThat(map.findAsteroidWithMostDetected().nrOfDetectableAsteroids()).isEqualTo(210)
+    }
+
+    @Test
+    internal fun `part 1 solution should be 284`() {
+        val map = AsteroidMap(readFile("day10/input.txt"))
+        assertThat(map.findAsteroidWithMostDetected().nrOfDetectableAsteroids()).isEqualTo(284)
     }
 }

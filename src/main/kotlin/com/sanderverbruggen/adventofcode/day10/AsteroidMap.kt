@@ -28,9 +28,7 @@ class AsteroidMap(mapString: String) {
         return asteroids
     }
 
-    fun findAsteroidWithMostDetected() = asteroids
-            .sortedBy { it.nrOfDetectableAsteroids() }
-            .last()
+    fun findAsteroidWithMostDetected() = asteroids.maxBy { it.nrOfDetectableAsteroids() }!!
 }
 
 class Asteroid(
@@ -50,8 +48,8 @@ class Asteroid(
 
     fun nrOfDetectableAsteroids() = neighbors.size
 
-    private fun getAngle(other: Asteroid): Double {
-        val angle = toDegrees(atan2(other.y.toDouble() - y, other.x.toDouble() - x))
+    fun getAngle(other: Asteroid): Double {
+        val angle = toDegrees(atan2(other.y.toDouble() - y, other.x.toDouble() - x)) + 90
         return if (angle < 0) {
             angle + 360
         } else {
@@ -83,3 +81,9 @@ class Asteroid(
 
     override fun toString() = "($x, $y)"
 }
+
+class NeighborAsteroid(
+        val asteroid: Asteroid,
+        val angle: Double,
+        val blockedBy: Int
+)
