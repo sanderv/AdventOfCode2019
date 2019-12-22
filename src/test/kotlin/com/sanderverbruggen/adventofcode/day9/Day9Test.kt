@@ -3,6 +3,8 @@ package com.sanderverbruggen.adventofcode.day9
 import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import com.sanderverbruggen.adventofcode.readFile
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Tag
@@ -28,10 +30,15 @@ class Day9Test {
     internal fun `should return copy of itself`() {
         val intCode = "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99"
         val program = IntcodeProgram(intCode, outputChannel = Channel(20))
-        val result = runBlocking {
+        runBlocking {
             program.suspendedRun()
         }
-        assertThat(program.toString()).isEqualTo(intCode)
+        val result = runBlocking {
+            program.outputChannel.consumeAsFlow()
+                    .toList()
+                    .joinToString(",")
+        }
+        assertThat(result).isEqualTo(intCode)
     }
 
     @Test

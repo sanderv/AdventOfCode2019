@@ -38,6 +38,7 @@ open class IntcodeProgram(
             }
             advance(skipInts)
         }
+        outputChannel.close()
         return exitCode
     }
 
