@@ -12,8 +12,8 @@ class AsteroidMap(mapString: String) {
     private fun parse(mapString: String): List<Asteroid> {
         val asteroids = mapString.lines()
                 .mapIndexed { y, line ->
-                    line.split("").drop(1).dropLast(1)
-                            .mapIndexed { x, cell -> if (cell == "#") Asteroid(x, y) else null }
+                    line
+                            .mapIndexed { x, cell -> if (cell == '#') Asteroid(x, y) else null }
                             .filterNotNull()
                 }
                 .flatten()
@@ -34,19 +34,39 @@ class AsteroidMap(mapString: String) {
 class Asteroid(
         val x: Int,
         val y: Int,
-        val neighbors: MutableMap<Double, MutableMap<Double, Asteroid>> = mutableMapOf()
+        val neighbors: MutableMap<Double, MutableList<NeighborAsteroid>> = mutableMapOf()
 ) {
-    fun addNeighbor(neighbor: Asteroid) {
-        if (neighbor == this)
+    fun addNeighbor(otherAsteroid: Asteroid) {
+        if (otherAsteroid == this)
             return
 
-        val angle = getAngle(neighbor)
-        val distance = getDistance(neighbor)
-        neighbors.getOrPut(angle, { mutableMapOf() })
-                .put(distance, neighbor)
+        val angle = getAngle(otherAsteroid)
+        val distance = getDistance(otherAsteroid)
+        val neighbor = NeighborAsteroid(otherAsteroid, angle, distance)
+        neighbors.getOrPut(angle, { mutableListOf() })
+                .add(neighbor)
     }
 
     fun nrOfDetectableAsteroids() = neighbors.size
+
+    fun vaporize(): List<Asteroid> {
+        neighbors.forEach {
+            it.value
+                    .sortedBy { it.distance }
+                    .forEachIndexed { index, neighborAsteroid -> neighborAsteroid.blockedBy = index }
+        }
+        val order = neighbors
+                .flatMap {
+                    it.value
+                }.toMutableList()
+
+        order.sortWith(compareBy(
+                { it.blockedBy },
+                { it.angle }))
+
+        return order.map { it.asteroid }
+    }
+
 
     fun getAngle(other: Asteroid): Double {
         val angle = toDegrees(atan2(other.y.toDouble() - y, other.x.toDouble() - x)) + 90
@@ -85,5 +105,6 @@ class Asteroid(
 class NeighborAsteroid(
         val asteroid: Asteroid,
         val angle: Double,
-        val blockedBy: Int
+        val distance: Double,
+        var blockedBy: Int = 0
 )
