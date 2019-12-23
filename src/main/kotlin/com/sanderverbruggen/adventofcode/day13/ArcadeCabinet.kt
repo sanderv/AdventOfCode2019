@@ -1,44 +1,72 @@
 package com.sanderverbruggen.adventofcode.day13
 
+import com.sanderverbruggen.adventofcode.day13.BlockType.*
 import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.math.sign
 
 class ArcadeCabinet(intCode: String) {
     internal val program = IntcodeProgram(intCode)
-    internal val grid: MutableList<Tile> = mutableListOf()
-
-    fun run() {
+    internal val grid = Array<Array<BlockType>>(26) { Array(42) { EMPTY } }
+    var score = 0
+    var paddlePos: Int? = null
+    var ballPos: Int? = null
+    fun run(): Int {
         runBlocking {
-            val job = launch { program.suspendedRun() }
+            launch { program.suspendedRun() }
             val out = program.outputChannel
-            var currentY = 0L
-            while (job.isActive) {
-                val x = out.receive()
-                val y = out.receive()
-                val value = out.receive()
+            var running = true
+            while (running) {
+                val x = out.receive().toInt()
+                val y = out.receive().toInt()
+                val value = out.receive().toInt()
 
-                val tile = Tile(x, y, BlockType.byCode(value))
-                if (y != currentY) {
-                    println()
-                    currentY = y
+                if (x == -1) {
+                    score = value
+                    running = !cleared()
+                } else {
+                    val blockType = BlockType.byCode(value)
+                    grid[y][x] = blockType
+                    when (blockType) {
+                        BALL -> ballPos = x
+                        HORIZONTAL_PADDLE -> paddlePos = x
+                    }
                 }
-                print(tile.id.display)
 
-                grid.add(tile)
+                if (paddlePos != null && ballPos != null) {
+                    printScreen()
+                    val joystickMove = (ballPos!! - paddlePos!!).sign.toLong()
+                    program.inputChannel.send(joystickMove)
+                    ballPos = null
+                }
             }
         }
+
+        return score
     }
 
     fun insertQuarters(nrQuarters: Int) {
         program.program[0] = nrQuarters.toLong()
     }
+
+    fun printScreen() {
+        val screen = grid
+                .map {
+                    it
+                            .map { it.display }
+                            .joinToString("")
+                }
+                .joinToString("\n")
+        println("\rScore: $score")
+        print(screen)
+    }
+
+    fun cleared() = grid.flatMap { it.map { it.display } }.none { it == BLOCK.display }
 }
 
 
-data class Tile(val x: Long, val y: Long, val id: BlockType)
-
-enum class BlockType(private val code: Long, val display: Char) {
+enum class BlockType(private val code: Int, val display: Char) {
     EMPTY(0, ' '),
     WALL(1, '.'),
     BLOCK(2, '#'),
@@ -46,7 +74,7 @@ enum class BlockType(private val code: Long, val display: Char) {
     BALL(4, 'o');
 
     companion object {
-        fun byCode(code: Long): BlockType = values().first { it.code == code }
+        fun byCode(code: Int): BlockType = values().first { it.code == code }
 
     }
 }
