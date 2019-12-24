@@ -90,8 +90,10 @@ class Day14Test {
         var oreNeeded = 0L
         var oreNeededExtraFuel = 0L
         val input = readFile("day14/input.txt")
+        var tries = 0
 
         do {
+            tries++
             solution = (tooLow + tooHigh) / 2
             oreNeeded = NanoFactory(input, solution).solve()
             oreNeededExtraFuel = NanoFactory(input, solution + 1).solve()
@@ -103,6 +105,7 @@ class Day14Test {
             }
         } while (!(oreNeeded < maxOre && oreNeededExtraFuel > maxOre))
         assertThat(solution).isEqualTo(2944565)
+        println("Found in $tries tries")
     }
 
     internal fun assert(input: String, expectedAnswer: Int) {
