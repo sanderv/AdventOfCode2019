@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Tags (IntCode )" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
-    <module name="advent-of-code" />
+    <module name="AdventOfCode2019" />
     <option name="PACKAGE_NAME" value="" />
     <option name="MAIN_CLASS_NAME" value="" />
     <option name="METHOD_NAME" value="" />
