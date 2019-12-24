@@ -4,7 +4,7 @@ import kotlin.math.sign
 
 class NanoFactory(input: String, requestedFuel: Int) {
     val formulas = parseFormulas(input)
-    var neededChemicals = listOf(Chemical(requestedFuel, Chemical.FUEL))
+    var neededChemicals = listOf(Chemical(requestedFuel.toLong(), Chemical.FUEL))
 
     internal fun parseFormulas(input: String): MutableMap<Chemical, Formula> {
         return input.lines()
@@ -14,8 +14,7 @@ class NanoFactory(input: String, requestedFuel: Int) {
                 .toMutableMap()
     }
 
-    fun solve(): Int {
-        println(neededChemicals)
+    fun solve(): Long {
         while (!solved()) {
             val substituted = mutableListOf<Chemical>()
             neededChemicals = neededChemicals
@@ -34,7 +33,6 @@ class NanoFactory(input: String, requestedFuel: Int) {
                     .groupBy { it.name }
                     .map { (name, chemicals) -> Chemical(chemicals.map { it.quantity }.sum(), name) }
             substituted.forEach { formulas.remove(it) }
-            println(neededChemicals)
         }
 
         return neededChemicals.first().quantity
@@ -42,11 +40,11 @@ class NanoFactory(input: String, requestedFuel: Int) {
 
     private fun solved() = neededChemicals.size == 1 && neededChemicals.first().name == Chemical.ORE
     private fun canBeSubstituted(chemical: Chemical): Boolean = !formulas.values.flatMap { it.materials }.any { it == chemical } && chemical.name != Chemical.ORE
-    private fun nrBatches(required: Int, batchSize: Int) = ((required / batchSize) + (required % batchSize).sign)
+    private fun nrBatches(required: Long, batchSize: Long) = ((required / batchSize) + (required % batchSize).sign)
 }
 
 class Chemical(
-        val quantity: Int,
+        val quantity: Long,
         val name: String
 ) {
     companion object {
@@ -84,7 +82,7 @@ class Formula(
 
         private fun parseChemical(input: String): Chemical {
             val elements = input.trim().split(" ")
-            return Chemical(elements[0].toInt(), elements[1].trim())
+            return Chemical(elements[0].toLong(), elements[1].trim())
         }
 
         private fun parseMaterials(input: String): List<Chemical> {

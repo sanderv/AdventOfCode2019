@@ -81,7 +81,31 @@ class Day14Test {
         assert(readFile("day14/input.txt"), 502491)
     }
 
+    @Test
+    internal fun `part 2 solution should be`() {
+        var maxOre = 1_000_000_000_000
+        var solution = (maxOre / 502491).toInt() // start here
+        var tooLow = solution
+        var tooHigh = solution * 2
+        var oreNeeded = 0L
+        var oreNeededExtraFuel = 0L
+        val input = readFile("day14/input.txt")
+
+        do {
+            solution = (tooLow + tooHigh) / 2
+            oreNeeded = NanoFactory(input, solution).solve()
+            oreNeededExtraFuel = NanoFactory(input, solution + 1).solve()
+
+            if (oreNeeded > maxOre) {
+                tooHigh = solution
+            } else {
+                tooLow = solution
+            }
+        } while (!(oreNeeded < maxOre && oreNeededExtraFuel > maxOre))
+        assertThat(solution).isEqualTo(2944565)
+    }
+
     internal fun assert(input: String, expectedAnswer: Int) {
-        assertThat(NanoFactory(input, 1).solve()).isEqualTo(expectedAnswer)
+        assertThat(NanoFactory(input, 1).solve().toInt()).isEqualTo(expectedAnswer)
     }
 }
