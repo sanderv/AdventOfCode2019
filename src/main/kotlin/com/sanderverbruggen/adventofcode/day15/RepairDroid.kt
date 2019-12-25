@@ -13,6 +13,8 @@ class RepairDroid(input: String) {
     private val area: MutableMap<Point, Cell> = mutableMapOf()
     private var currentLocation = Point(0, 0)
     private var moved = false
+    private var nrStepsTaken = 0
+    private var nrMinutesWaited = -1
 
     private var minX = 0
     private var maxX = 0
@@ -21,13 +23,14 @@ class RepairDroid(input: String) {
 
     fun solve() {
         runBlocking {
-            launch { brain.suspendedRun() }
-            area.putIfAbsent(currentLocation, Cell(CellType.START))
+            val job = launch { brain.suspendedRun() }
+            area.putIfAbsent(currentLocation, Cell(CellType.FREE))
 
             do {
                 var move = nextMove()
                 if (move == BACKTRACK) {
                     move = currentCell().enteredFrom!!
+                    nrStepsTaken -= 2 // Remove 2, because taking the step back will add 1
                 }
                 brain.inputChannel.send(move.command)
                 val cellType = getCellType()
@@ -35,10 +38,35 @@ class RepairDroid(input: String) {
                 if (cellType != CellType.WALL) {
                     executeMove(move)
                 }
-                printArea()
             } while (movePossible())
+            println("Done")
+
+            nrMinutesWaited = 0
+            while (emptySpaceLeft()) {
+                waitAMinute()
+                nrMinutesWaited++
+            }
+            println("Ship flooded with oxygen in $nrMinutesWaited minutes")
+            job.cancel()
         }
-        printArea()
+    }
+
+    private fun emptySpaceLeft() = area.values.any { it.type == CellType.FREE }
+    private fun waitAMinute() {
+        area
+                .filter { it.value.type == CellType.OXYGEN }
+                .forEach { floodSurroundings(it.key) }
+    }
+
+    private fun floodSurroundings(location: Point) {
+        currentLocation = location
+        listOf(NORTH, EAST, SOUTH, WEST)
+                .forEach { direction ->
+                    val type = area[getTargetLocation(direction)]!!.type
+                    if (type != CellType.WALL) {
+                        markCell(CellType.OXYGEN, direction)
+                    }
+                }
     }
 
     private suspend fun getCellType(): CellType {
@@ -50,7 +78,7 @@ class RepairDroid(input: String) {
         }
     }
 
-    private fun movePossible() = !moved || area[currentLocation]!!.type != CellType.START
+    private fun movePossible() = !moved || currentLocation != Point(0, 0)
     private fun nextMove(): AndroidDirection {
         var nextDirection: AndroidDirection = currentCell().lastDirectionTried ?: AndroidDirection.values()[0]
         while (nextDirection != BACKTRACK && area.containsKey(getTargetLocation(nextDirection))) {
@@ -63,14 +91,24 @@ class RepairDroid(input: String) {
     private fun currentCell() = area[currentLocation]!!
     private fun markCell(cellType: CellType, move: AndroidDirection) {
         val targetLocation = getTargetLocation(move)
+        if (cellType == CellType.OXYGEN && nrMinutesWaited == -1) {
+            println("Found oxygen at $targetLocation in ${nrStepsTaken + 1} steps")
+        }
+        if (cellType != CellType.OXYGEN) {
+            area.putIfAbsent(targetLocation, Cell(
+                    type = cellType,
+                    enteredFrom = if (cellType == CellType.WALL) null else move.opposite())
+            )
+        } else {
+            area.put(targetLocation, Cell(
+                    type = cellType,
+                    enteredFrom = if (cellType == CellType.WALL) null else move.opposite())
+            )
+        }
         minX = min(minX, targetLocation.x)
         maxX = max(maxX, targetLocation.x)
         minY = min(minY, targetLocation.y)
         maxY = max(maxY, targetLocation.y)
-        area.putIfAbsent(targetLocation, Cell(
-                type = cellType,
-                enteredFrom = if (cellType == CellType.WALL) null else move.opposite())
-        )
     }
 
     private fun getTargetLocation(move: AndroidDirection): Point {
@@ -86,6 +124,7 @@ class RepairDroid(input: String) {
 
     private fun executeMove(move: AndroidDirection) {
         currentLocation = getTargetLocation(move)
+        nrStepsTaken++
         moved = true
     }
 
@@ -97,7 +136,8 @@ class RepairDroid(input: String) {
         for (y in minY..maxY) {
             for (x in minX..maxX) {
                 val drawPoint = Point(x, y)
-                print(if (drawPoint == currentLocation) 'D' else area.getOrDefault(drawPoint, unknownCell))
+                print(area.getOrDefault(drawPoint, unknownCell))
+//                print(if (drawPoint == currentLocation) 'D' else area.getOrDefault(drawPoint, unknownCell))
             }
             println()
         }
