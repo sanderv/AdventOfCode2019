@@ -1,5 +1,6 @@
 package com.sanderverbruggen.adventofcode.day16
 
+import com.sanderverbruggen.adventofcode.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -25,9 +26,20 @@ internal class FFTTest {
             delimiter = '|'
     )
     internal fun `should calculate 100 phases examples`(input: String, expectedResult: String) {
+        val result = run100times(input)
+        assertThat(result.take(8)).isEqualTo(expectedResult)
+    }
+
+    private fun run100times(input: String): String {
         val fft = FFT(input)
         repeat(99) { fft.nextPhase() }
         val result = fft.nextPhase()
-        assertThat(result).startsWith(expectedResult)
+        return result
+    }
+
+    @Test
+    internal fun `part 1 solution should be 58100105`() {
+        val result = run100times(readFile("day16/input.txt"))
+        assertThat(result.take(8)).isEqualTo("58100105")
     }
 }
