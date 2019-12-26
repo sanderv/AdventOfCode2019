@@ -1,17 +1,14 @@
 package com.sanderverbruggen.adventofcode.day15
 
 import com.sanderverbruggen.adventofcode.day15.AndroidDirection.*
-import com.sanderverbruggen.adventofcode.day2.IntcodeProgram
+import com.sanderverbruggen.adventofcode.day17.Robot
 import com.sanderverbruggen.adventofcode.day3.Point
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.math.max
 import kotlin.math.min
 
-class RepairDroid(input: String) {
-    private val brain = IntcodeProgram(input)
-    private val area: MutableMap<Point, Cell> = mutableMapOf()
-    private var currentLocation = Point(0, 0)
+class RepairDroid(input: String) : Robot<RepairDroidCell>(input) {
     private var moved = false
     private var nrStepsTaken = 0
     private var nrMinutesWaited = -1
@@ -24,7 +21,7 @@ class RepairDroid(input: String) {
     fun solve() {
         runBlocking {
             val job = launch { brain.suspendedRun() }
-            area.putIfAbsent(currentLocation, Cell(CellType.FREE))
+            area.putIfAbsent(currentLocation, RepairDroidCell(RepairDroidCellType.FREE))
 
             do {
                 var move = nextMove()
@@ -35,7 +32,7 @@ class RepairDroid(input: String) {
                 brain.inputChannel.send(move.command)
                 val cellType = getCellType()
                 markCell(cellType, move)
-                if (cellType != CellType.WALL) {
+                if (cellType != RepairDroidCellType.WALL) {
                     executeMove(move)
                 }
             } while (movePossible())
@@ -51,10 +48,10 @@ class RepairDroid(input: String) {
         }
     }
 
-    private fun emptySpaceLeft() = area.values.any { it.type == CellType.FREE }
+    private fun emptySpaceLeft() = area.values.any { it.type == RepairDroidCellType.FREE }
     private fun waitAMinute() {
         area
-                .filter { it.value.type == CellType.OXYGEN }
+                .filter { it.value.type == RepairDroidCellType.OXYGEN }
                 .forEach { floodSurroundings(it.key) }
     }
 
@@ -63,17 +60,17 @@ class RepairDroid(input: String) {
         listOf(NORTH, EAST, SOUTH, WEST)
                 .forEach { direction ->
                     val type = area[getTargetLocation(direction)]!!.type
-                    if (type != CellType.WALL) {
-                        markCell(CellType.OXYGEN, direction)
+                    if (type != RepairDroidCellType.WALL) {
+                        markCell(RepairDroidCellType.OXYGEN, direction)
                     }
                 }
     }
 
-    private suspend fun getCellType(): CellType {
+    private suspend fun getCellType(): RepairDroidCellType {
         return when (brain.outputChannel.receive().toInt()) {
-            0 -> CellType.WALL
-            1 -> CellType.FREE
-            2 -> CellType.OXYGEN
+            0 -> RepairDroidCellType.WALL
+            1 -> RepairDroidCellType.FREE
+            2 -> RepairDroidCellType.OXYGEN
             else -> throw RuntimeException("Unknown command")
         }
     }
@@ -89,20 +86,20 @@ class RepairDroid(input: String) {
     }
 
     private fun currentCell() = area[currentLocation]!!
-    private fun markCell(cellType: CellType, move: AndroidDirection) {
+    private fun markCell(cellType: RepairDroidCellType, move: AndroidDirection) {
         val targetLocation = getTargetLocation(move)
-        if (cellType == CellType.OXYGEN && nrMinutesWaited == -1) {
+        if (cellType == RepairDroidCellType.OXYGEN && nrMinutesWaited == -1) {
             println("Found oxygen at $targetLocation in ${nrStepsTaken + 1} steps")
         }
-        if (cellType != CellType.OXYGEN) {
-            area.putIfAbsent(targetLocation, Cell(
+        if (cellType != RepairDroidCellType.OXYGEN) {
+            area.putIfAbsent(targetLocation, RepairDroidCell(
                     type = cellType,
-                    enteredFrom = if (cellType == CellType.WALL) null else move.opposite())
+                    enteredFrom = if (cellType == RepairDroidCellType.WALL) null else move.opposite())
             )
         } else {
-            area.put(targetLocation, Cell(
+            area.put(targetLocation, RepairDroidCell(
                     type = cellType,
-                    enteredFrom = if (cellType == CellType.WALL) null else move.opposite())
+                    enteredFrom = if (cellType == RepairDroidCellType.WALL) null else move.opposite())
             )
         }
         minX = min(minX, targetLocation.x)
@@ -111,41 +108,16 @@ class RepairDroid(input: String) {
         maxY = max(maxY, targetLocation.y)
     }
 
-    private fun getTargetLocation(move: AndroidDirection): Point {
-        val (dx, dy) = when (move) {
-            NORTH -> Pair(0, -1)
-            EAST -> Pair(1, 0)
-            SOUTH -> Pair(0, 1)
-            WEST -> Pair(-1, 0)
-            else -> throw RuntimeException("Shouldn't place on backtracking")
-        }
-        return Point(currentLocation.x + dx, currentLocation.y + dy)
-    }
-
     private fun executeMove(move: AndroidDirection) {
         currentLocation = getTargetLocation(move)
         nrStepsTaken++
         moved = true
     }
 
-    private fun printArea() {
-        println()
-        println()
-        println()
-        val unknownCell = Cell(CellType.UNKNOWN)
-        for (y in minY..maxY) {
-            for (x in minX..maxX) {
-                val drawPoint = Point(x, y)
-                print(area.getOrDefault(drawPoint, unknownCell))
-//                print(if (drawPoint == currentLocation) 'D' else area.getOrDefault(drawPoint, unknownCell))
-            }
-            println()
-        }
-    }
 }
 
-class Cell(
-        val type: CellType,
+class RepairDroidCell(
+        val type: RepairDroidCellType,
         val enteredFrom: AndroidDirection? = null
 ) {
     var lastDirectionTried: AndroidDirection? = null
@@ -154,7 +126,7 @@ class Cell(
     }
 }
 
-enum class CellType(
+enum class RepairDroidCellType(
         val code: Int,
         val display: Char
 ) {
