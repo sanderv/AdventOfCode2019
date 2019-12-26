@@ -5,7 +5,7 @@ class PatternGenerator(private val multiply: Int) {
         val basePattern = arrayListOf(0, 1, 0, -1)
     }
 
-    var position = if (multiply == 1) 0 else 1
+    var position = 1
 
     fun next(): Int {
         val result = basePattern[position / multiply]
